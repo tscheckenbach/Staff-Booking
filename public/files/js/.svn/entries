@@ -1,0 +1,71 @@
+9
+
+dir
+34
+file:///Users/tsc/Documents/SVN/supibooking/trunk/public/files/js
+file:///Users/tsc/Documents/SVN/supibooking
+
+
+
+2009-03-20T09:52:37.909695Z
+27
+tsc
+
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+fe93c4ad-49d0-4216-a85e-c5a1f46d3902
+
+dijit
+dir
+
+dojox
+dir
+
+dojo
+dir
+
+standard.js
+file
+
+
+
+
+2009-03-28T13:26:46.000000Z
+e50f3deb547c93ab15f3beba174a3e86
+2009-03-20T09:52:37.909695Z
+27
+tsc
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1174
+

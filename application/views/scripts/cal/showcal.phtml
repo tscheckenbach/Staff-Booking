@@ -1,0 +1,79 @@
+		<div id="wrapper">
+			<div id="headerContainer">
+                <img id="logo" src="/files/images/logo.png" />
+                <div id="calNavigationContainer">
+                    <h1>
+                    <?php
+                        if($this->isArchived == true){
+                            print 'Diese Woche ist nicht mehr editierbar!';
+                        }else{
+                            print "&nbsp;";
+                        }
+                    ?>
+                    </h1>
+                    <ul id="calNavigation">
+                        <li><a href="<?php echo $this->url(array('controller'=>'cal','action'=>'showcal', 'week'=>$this->lastWeekParam));?>" title="Letzte Woche"><img src="/files/images/arrow_back.png" />Letzte Woche</a></li>
+                        <li><a href="<?php echo $this->url(array('controller'=>'cal','action'=>'showcal', 'week'=>0));?>" title="Aktuelle Woche"><img src="/files/images/arrow_top.png" />Aktuelle Woche</a></li>
+                        <li><a href="<?php echo $this->url(array('controller'=>'cal','action'=>'showcal', 'week'=>$this->nextWeekParam));?>" title="N&auml;chste Woche"><img src="/files/images/arrow_next.png" />N&auml;chste Woche</a></li>
+                        <li><a href="<?php echo $this->url(array('controller'=>'index','action'=>'logout'));?>" title="Abmelden"><img src="/files/images/logout.png" />Abmelden</a></li>
+                    </ul>
+                </div>
+			</div>
+			<table id="calTable">
+				<tr>
+					<th>Zeit</th>
+					<?php 
+                        $i = 0;
+                        foreach ($this->openDays as $key => $val):
+                    ?>
+					<th>
+						<?php 
+                            echo date("l d.m.Y", $this->escape($val));
+                            if($this->isArchived == false){
+                                echo '<br /><br />
+                                <a href= "' . $this->url(array('controller'=>'cal','action'=>'booker', 'do'=>'bookwholeday', 'selectedDate'=>date("Y-m-d", $this->openDays[$i]))) . '" title="Ganzen Tag ausw&auml;hlen"><img src="/files/images/action_check.png" /></a>
+                                <a href= "' . $this->url(array('controller'=>'cal','action'=>'booker', 'do'=>'unbookwholeday', 'selectedDate'=>date("Y-m-d", $this->openDays[$i]))) . '" title="Alle auswahlen entfernen"><img src="/files/images/action_delete.png" /></a>';
+                            }
+                        ?>
+
+                    </th>
+					<?php
+                        $i++;
+                        endforeach;
+                    ?>
+				</tr>
+				<?php for($a=$this->minOpenHours;$a<=$this->maxOpenHours;$a++) :?>
+				<tr>
+					<td class="time"><?= $this->escape($this->openHours[$a]); ?></td>
+                    <!--<a onClick="book(\'' . $this->url(array('controller'=>'cal','action'=>'booker', 'do'=>'book', 'selectedDate'=>date("Y-m-d", $this->openDays[$i]) . " " . $a . ":00:00")) . '\',this);return false;" href="#"><img src="/files/images/action_check.png" />anw&auml;hlen</a>-->
+					<?php for($i=0;$i<count($this->openDays);$i++): 
+					if($this->openCloseMatrix[$i][$a] == 1) {
+                        if($this->bookedMatrix[$i][$a] == "nicht gebucht") {
+                            if($this->isArchived == false){
+                                echo '<td id="td' . date("Ymd", $this->openDays[$i]) . '' . $a . '" class="bookentry calentry">
+                                        <a href="#" id="a' . date("Ymd", $this->openDays[$i]) . '' . $a . '" onclick="bookerAction(\'book\',\'' . date("Y-m-d", $this->openDays[$i]) . " " . $a . ":00:00" . '\');return false;" ><img src="/files/images/action_check.png" />anw&auml;hlen</a>
+                                      </td>';
+                            }else{
+                                echo '<td class="bookentry calentry">
+                                        <img src="/files/images/action_check.png" />
+                                      </td>';
+                            }
+                        } else {
+                            if($this->isArchived == false){
+                                echo '<td id="td' . date("Ymd", $this->openDays[$i]) . '' . $a . '" class="unbookentry calentry">
+                                        <a href="#" id="a' . date("Ymd", $this->openDays[$i]) . '' . $a . '" onclick="bookerAction(\'unbook\',\'' . date("Y-m-d", $this->openDays[$i]) . " " . $a . ":00:00" . '\');return false;" ><img src="/files/images/action_delete.png" />abw&auml;hlen</a>
+                                      </td>';
+                            }else{
+                                echo '<td class="unbookentry calentry">
+                                        <img src="/files/images/action_delete.png" />
+                                      </td>';
+                            }
+                        }
+					} else {
+						print '<td class="calentry closed">geschlossen</td>';
+					} 
+					endfor; ?>
+				</tr>
+				<?php endfor; ?>
+			</table>
+		</div>

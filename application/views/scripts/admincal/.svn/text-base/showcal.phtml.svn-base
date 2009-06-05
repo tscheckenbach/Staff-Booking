@@ -1,0 +1,70 @@
+<?php $this->dojo()->enable(); ?>
+<div id="wrapper">
+    <div id="headerContainer">
+        <img id="logo" src="/files/images/logo.png" />
+        <div id="calNavigationContainer">
+            <h1>
+                <?php
+                    if($this->isArchived == true){
+                        print 'Diese Woche ist deaktiviert!';
+                    }else{
+                        print "&nbsp;";
+                    }
+                ?>
+            </h1>
+            <ul id="calNavigation">
+                <li><a href="<?php echo $this->url(array('controller'=>'admincal','action'=>'showcal', 'week'=>$this->lastWeekParam));?>" title="Letzte Woche"><img src="/files/images/arrow_back.png" />Letzte Woche</a></li>
+                <li><a href="<?php echo $this->url(array('controller'=>'admincal','action'=>'showcal', 'week'=>0));?>" title="Aktuelle Woche"><img src="/files/images/arrow_top.png" />Aktuelle Woche</a></li>
+                <li><a href="<?php echo $this->url(array('controller'=>'admincal','action'=>'showcal', 'week'=>$this->nextWeekParam));?>" title="N&auml;chste Woche"><img src="/files/images/arrow_next.png" />N&auml;chste Woche</a></li>
+                <?php
+                    if($this->isArchived == false){
+                        echo '<li><a href="' . $this->url(array('controller'=>'admincal','action'=>'archive', 'dayOfThisWeek'=>$this->dayOfThisWeek)) . '" title="Supis können keine &Auml;derungen mehr vornehmen"><img src="/files/images/save.png" />Woche deaktivieren</a></li>';
+                    }else{
+                        echo '<li><a href="' . $this->url(array('controller'=>'admincal','action'=>'unarchive', 'dayOfThisWeek'=>$this->dayOfThisWeek)) . '" title="Supis können wieder &Auml;derungen vornehmen"><img src="/files/images/save.png" />Woche aktivieren</a></li>';
+                    }
+                ?>
+                <li><a href="<?php echo $this->url(array('controller'=>'index','action'=>'logout'));?>" title="Abmelden"><img src="/files/images/logout.png" />Abmelden</a></li>
+            </ul>
+        </div>
+    </div>
+    <table id="calTable">
+        <tr>
+            <th>Zeit</th>
+            <?php
+                $i = 0;
+                foreach ($this->openDays as $key => $val):
+            ?>
+            <th>
+                <?php
+                    echo date("l d.m.Y", $this->escape($val));
+                ?>
+            </th>
+            <?php
+                $i++;
+                endforeach;
+            ?>
+        </tr>
+        <?php for($a=$this->minOpenHours;$a<=$this->maxOpenHours;$a++) :?>
+        <tr>
+            <td class="time"><?= $this->escape($this->openHours[$a]); ?></td>
+            <?php for($i=0;$i<count($this->openDays);$i++):
+            if($this->openCloseMatrix[$i][$a] == 1) {
+                if($this->bookedMatrix[$i][$a] != "nicht gebucht") {
+                    echo '<td class="calentry selected">';
+                    foreach($this->bookedMatrix[$i][$a] as $username){
+                        echo $username . "<br/>";
+                    }
+                    echo '</td>';
+                } else {
+                    echo '<td class="calentry notselected">
+                            &nbsp;
+                          </td>';
+                }
+            } else {
+                print '<td class="calentry closed">geschlossen</td>';
+            }
+            endfor; ?>
+        </tr>
+        <?php endfor; ?>
+    </table>
+</div>

@@ -22,5 +22,16 @@ $application = new Zend_Application(
     APPLICATION_ENV, 
     APPLICATION_PATH . '/configs/application.ini'
 );
+
+
+/** Get DB-Adapter **/
+$bootstrap = $application->getBootstrap();
+$bootstrap->bootstrap('db');
+$db = $bootstrap->getResource('db');
+
+Zend_Db_Table::setDefaultAdapter($db);
+Zend_Registry::set('db', $db);
+
+
 $application->bootstrap()
             ->run();

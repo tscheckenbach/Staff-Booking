@@ -1,0 +1,193 @@
+9
+
+dir
+34
+file:///Users/tsc/Documents/SVN/supibooking/trunk/public/files/js/dojo/cldr/nls
+file:///Users/tsc/Documents/SVN/supibooking
+
+
+
+2009-03-11T19:03:20.276664Z
+18
+tsc
+
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+fe93c4ad-49d0-4216-a85e-c5a1f46d3902
+
+zh-cn
+dir
+
+zh
+dir
+
+en-ca
+dir
+
+ko-kr
+dir
+
+pt
+dir
+
+pt-br
+dir
+
+it-it
+dir
+
+en-us
+dir
+
+en-gb
+dir
+
+de
+dir
+
+gregorian.js
+file
+
+
+
+
+2009-03-28T13:26:45.000000Z
+2f6f1d337ffcc8b11ec7f21d4bd802f7
+2009-03-11T19:03:20.276664Z
+18
+tsc
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3324
+
+ja
+dir
+
+ja-jp
+dir
+
+en
+dir
+
+number.js
+file
+
+
+
+
+2009-03-28T13:26:45.000000Z
+fc33990f816eb1c8258774dc11ac447d
+2009-03-11T19:03:20.276664Z
+18
+tsc
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+750
+
+en-au
+dir
+
+currency.js
+file
+
+
+
+
+2009-03-28T13:26:45.000000Z
+6a62f025931b4a969fb767993bddafcb
+2009-03-11T19:03:20.276664Z
+18
+tsc
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+262
+
+fr
+dir
+
+es
+dir
+
+ko
+dir
+
+zh-tw
+dir
+
+it
+dir
+
+es-es
+dir
+
+de-de
+dir
+

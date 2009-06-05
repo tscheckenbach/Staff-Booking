@@ -1,0 +1,177 @@
+9
+
+dir
+34
+file:///Users/tsc/Documents/SVN/supibooking/trunk/public/files/js/dijit/nls
+file:///Users/tsc/Documents/SVN/supibooking
+
+
+
+2009-03-11T19:03:20.276664Z
+18
+tsc
+
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+fe93c4ad-49d0-4216-a85e-c5a1f46d3902
+
+zh
+dir
+
+ca
+dir
+
+pt
+dir
+
+da
+dir
+
+tr
+dir
+
+ru
+dir
+
+de
+dir
+
+sv
+dir
+
+loading.js
+file
+
+
+
+
+2009-03-28T13:26:32.000000Z
+3ab29c409af7111dfc5d249dccbb18b4
+2009-03-11T19:03:20.276664Z
+18
+tsc
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+75
+
+ja
+dir
+
+he
+dir
+
+fi
+dir
+
+nb
+dir
+
+el
+dir
+
+ar
+dir
+
+common.js
+file
+
+
+
+
+2009-03-28T13:26:32.000000Z
+2619c9f2efd8f71024ac00742a7f1bed
+2009-03-11T19:03:20.276664Z
+18
+tsc
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+89
+
+pt-pt
+dir
+
+cs
+dir
+
+fr
+dir
+
+es
+dir
+
+ko
+dir
+
+nl
+dir
+
+zh-tw
+dir
+
+pl
+dir
+
+th
+dir
+
+it
+dir
+
+hu
+dir
+
+sk
+dir
+
+sl
+dir
+

@@ -1,0 +1,99 @@
+/*
+    Document   : content
+    Created on : 04.03.2009, 16:17:21
+    Author     : tsc
+    Description: Layout setzen
+*/
+
+body{
+	font-family: Helvetica, Arial;
+	font-size: 14px;
+	color: black;
+}
+
+#jsInfo {
+    width: 100%;
+    background-color: red;
+    height: 25px;
+    padding-top: 6px;
+    border-bottom: 1px solid black;
+}
+
+#jsInfo h1 {
+    width: 520px;
+    margin: 0 auto 0 auto;
+    color: black;
+    font-size: 18px;
+}
+
+div#wrapper {
+    width: 960px;
+    margin: 30px auto;
+    padding: 20px;
+    border: 1px solid #1f4385;
+    -moz-border-radius: 15px;
+    -khtml-border-radius: 15px;
+}
+
+div#loginwrapper {
+    width: 400px;
+    margin: 30px auto;
+    background-image: url("/files/images/logo.png");
+    background-repeat: no-repeat;
+    background-position: 230px 50%;
+    border: 1px solid #1f4385;
+    -moz-border-radius: 15px;
+    -khtml-border-radius: 15px;
+
+}
+
+div#logincontent {
+    margin: 20px;
+}
+
+#logo {
+    float: left;
+    margin-bottom: 20px;
+}
+
+dt {
+    margin-top: 5px;
+}
+
+table#calTable {
+	width: 960px;
+	clear: both;
+}
+
+div#calNavigationContainer{
+    height: 80px;
+}
+
+div#headerContainer {
+	width: 900px;
+    height: 80px;
+	margin-bottom: 20px;
+}
+
+table#calTable th {
+	padding: 5px;
+	text-align: center;
+	border: 1px solid black;
+}
+
+ul#calNavigation li{
+	float: left;
+    margin-left: 20px;
+    margin-top: 34px;
+}
+
+.time {
+	padding: 5px;
+	border: 1px solid black;
+}
+
+.calentry {
+	padding: 3px;
+	text-align: center;
+	border: 1px solid black;
+}
