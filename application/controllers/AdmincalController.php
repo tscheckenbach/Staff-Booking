@@ -1,4 +1,5 @@
 <?php
+require_once(APPLICATION_PATH."/controllers/CalController.php");
 /* 
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -27,7 +28,7 @@ class AdmincalController extends CalController
         $this->_redirector = $this->_helper->getHelper('Redirector');
 
         // Laden des Models
-        $this->model = new Model_Admin_Cal();
+        $this->model = new Model_Admincal();
 
     	// Pruefen ob eingeloggt
         if(!Zend_Auth::getInstance()->hasIdentity())
