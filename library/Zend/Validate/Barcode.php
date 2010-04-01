@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework
  *
@@ -16,13 +17,15 @@
  * @package    Zend_Validate
  * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Barcode.php 14042 2009-02-10 22:39:34Z thomas $
+ * @version    $Id: Barcode.php 8211 2008-02-20 14:29:24Z darby $
  */
+
 
 /**
  * @see Zend_Validate_Abstract
  */
 require_once 'Zend/Validate/Abstract.php';
+
 
 /**
  * @category   Zend
@@ -63,13 +66,11 @@ class Zend_Validate_Barcode extends Zend_Validate_Abstract
         switch (strtolower($barcodeType)) {
             case 'upc':
             case 'upc-a':
-                require_once 'Zend/Validate/Barcode/UpcA.php';
-                $class = 'Zend_Validate_Barcode_UpcA';
+                $className = 'UpcA';
                 break;
             case 'ean13':
             case 'ean-13':
-                require_once 'Zend/Validate/Barcode/Ean13.php';
-                $class = 'Zend_Validate_Barcode_Ean13';
+                $className = 'Ean13';
                 break;
             default:
                 require_once 'Zend/Validate/Exception.php';
@@ -77,6 +78,9 @@ class Zend_Validate_Barcode extends Zend_Validate_Abstract
                 break;
         }
 
+        require_once 'Zend/Validate/Barcode/' . $className . '.php';
+
+        $class = 'Zend_Validate_Barcode_' . $className;
         $this->_barcodeValidator = new $class;
     }
 

@@ -40,8 +40,6 @@ class Zend_Amf_Response_Http extends Zend_Amf_Response
     public function getResponse()
     {
         if (!headers_sent()) {
-            header('Cache-Control: cache, must-revalidate');
-            header('Pragma: public');
             header('Content-Type: application/x-amf');
         }
         return parent::getResponse();

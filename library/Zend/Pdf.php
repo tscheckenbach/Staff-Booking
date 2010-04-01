@@ -18,6 +18,10 @@
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
+
+/** Zend_Pdf_Exception */
+require_once 'Zend/Pdf/Exception.php';
+
 /** Zend_Pdf_Page */
 require_once 'Zend/Pdf/Page.php';
 
@@ -69,8 +73,10 @@ require_once 'Zend/Pdf/Resource/Image/Tiff.php';
 /** Zend_Pdf_Image_Png */
 require_once 'Zend/Pdf/Resource/Image/Png.php';
 
+
 /** Zend_Memory */
 require_once 'Zend/Memory.php';
+
 
 /**
  * General entity which describes PDF document.
@@ -256,7 +262,6 @@ class Zend_Pdf
     public function save($filename, $updateOnly = false)
     {
         if (($file = @fopen($filename, $updateOnly ? 'ab':'wb')) === false ) {
-            require_once 'Zend/Pdf/Exception.php';
             throw new Zend_Pdf_Exception( "Can not open '$filename' file for writing." );
         }
 
@@ -292,8 +297,7 @@ class Zend_Pdf
             $this->_parser  = new Zend_Pdf_Parser($source, $this->_objFactory, $load);
             $this->_trailer = $this->_parser->getTrailer();
             if ($this->_trailer->Encrypt !== null) {
-                require_once 'Zend/Pdf/Exception.php';
-                throw new Zend_Pdf_Exception('Encrypted document modification is not supported');
+            	throw new Zend_Pdf_Exception('Encrypted document modification is not supported');
             }
             if ($revision !== null) {
                 $this->rollback($revision);
@@ -417,7 +421,6 @@ class Zend_Pdf
     protected function _loadPages(Zend_Pdf_Element_Reference $pages, $attributes = array())
     {
         if ($pages->getType() != Zend_Pdf_Element::TYPE_DICTIONARY) {
-            require_once 'Zend/Pdf/Exception.php';
             throw new Zend_Pdf_Exception('Wrong argument');
         }
 
@@ -601,7 +604,6 @@ class Zend_Pdf
         }
 
         $fonts = array();
-        require_once 'Zend/Pdf/Exception.php';
         foreach ($fontResourcesUnique as $resourceReference => $fontDictionary) {
             try {
                 // Try to extract font
@@ -628,7 +630,6 @@ class Zend_Pdf
     public function extractFont($fontName)
     {
         $fontResourcesUnique = array();
-        require_once 'Zend/Pdf/Exception.php';
         foreach ($this->pages as $page) {
             $pageResources = $page->extractResources();
 
@@ -707,7 +708,6 @@ class Zend_Pdf
                                 break;
 
                             default:
-                                require_once 'Zend/Pdf/Exception.php';
                                 throw new Zend_Pdf_Exception('Wrong Trapped document property vale: \'' . $value . '\'. Only true, false and null values are allowed.');
                                 break;
                         }
@@ -735,7 +735,7 @@ class Zend_Pdf
                                 $value = chr(254) . chr(255) . mb_convert_encoding($value, 'UTF-16', $detected);
                             }
                         }
-                        $docInfo->$key = new Zend_Pdf_Element_String((string)$value);
+                    	$docInfo->$key = new Zend_Pdf_Element_String((string)$value);
                         break;
 
                     default:
@@ -898,7 +898,7 @@ class Zend_Pdf
      */
     public static function pdfDate($timestamp = null)
     {
-        if ($timestamp === null) {
+        if (is_null($timestamp)) {
             $date = date('\D\:YmdHisO');
         } else {
             $date = date('\D\:YmdHisO', $timestamp);

@@ -30,7 +30,7 @@ require_once 'Zend/Form/Element/Xhtml.php';
  * @subpackage Element
  * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Submit.php 14637 2009-04-04 13:53:25Z mcleod@spaceweb.nl $
+ * @version    $Id: Submit.php 8585 2008-03-06 19:32:34Z matthew $
  */
 class Zend_Form_Element_Submit extends Zend_Form_Element_Xhtml
 {
@@ -114,8 +114,7 @@ class Zend_Form_Element_Submit extends Zend_Form_Element_Xhtml
 
         $decorators = $this->getDecorators();
         if (empty($decorators)) {
-            $this->addDecorator('Tooltip')
-                 ->addDecorator('ViewHelper')
+            $this->addDecorator('ViewHelper')
                  ->addDecorator('DtDdWrapper');
         }
     }

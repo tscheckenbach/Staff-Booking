@@ -1,10 +1,11 @@
-    <div id="loginwrapper">
-        <div id="logincontent">
-            <?php if($this->errorMessage != ""): ?>
-            <p class="errors"><?= $this->errorMessage; ?></p>
-            <?php endif; ?>
+        <div dojoType="dojox.data.QueryReadStore" jsId="testStore" url="/index/autocomplete"></div>
+        <div id="loginwrapper">
+            <div id="logincontent">
+                <?php if($this->errorMessage != ""): ?>
+                <p class="errors"><?= $this->errorMessage; ?></p>
+                <?php endif; ?>
 
-            <?= $this->loginForm; ?>
-            <?= $this->DojoForm; ?>
+                <?= $this->loginForm; ?>
+                <?= $this->DojoForm; ?>
+            </div>
         </div>
-    </div>

@@ -16,18 +16,13 @@
  * @package    Zend_Validate
  * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Int.php 13375 2008-12-19 14:16:40Z thomas $
+ * @version    $Id: Int.php 12336 2008-11-06 19:11:46Z thomas $
  */
 
 /**
  * @see Zend_Validate_Abstract
  */
 require_once 'Zend/Validate/Abstract.php';
-
-/**
- * @see Zend_Locale_Format
- */
-require_once 'Zend/Locale/Format.php';
 
 /**
  * @category   Zend
@@ -46,38 +41,6 @@ class Zend_Validate_Int extends Zend_Validate_Abstract
         self::NOT_INT => "'%value%' does not appear to be an integer"
     );
 
-    protected $_locale;
-
-    /**
-     * Constructor for the integer validator
-     *
-     * @param string|Zend_Locale $locale
-     */
-    public function __construct($locale = null)
-    {
-        $this->setLocale($locale);
-    }
-
-    /**
-     * Returns the set locale
-     */
-    public function getLocale()
-    {
-        return $this->_locale;
-    }
-
-    /**
-     * Sets the locale to use
-     *
-     * @param string|Zend_Locale $locale
-     */
-    public function setLocale($locale = null)
-    {
-        require_once 'Zend/Locale.php';
-        $this->_locale = Zend_Locale::findLocale($locale);
-        return $this;
-    }
-
     /**
      * Defined by Zend_Validate_Interface
      *
@@ -95,16 +58,16 @@ class Zend_Validate_Int extends Zend_Validate_Abstract
             return false;
         }
 
-        try {
-            if (!Zend_Locale_Format::isInteger($value, array('locale' => $this->_locale))) {
-                $this->_error();
-                return false;
-            }
-        } catch (Zend_Locale_Exception $e) {
+        $locale        = localeconv();
+        $valueFiltered = str_replace($locale['decimal_point'], '.', $valueString);
+        $valueFiltered = str_replace($locale['thousands_sep'], '', $valueFiltered);
+
+        if (strval(intval($valueFiltered)) != $valueFiltered) {
             $this->_error();
             return false;
         }
 
         return true;
     }
+
 }

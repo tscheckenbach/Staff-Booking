@@ -15,7 +15,7 @@
  * @package    Zend_Controller
  * @subpackage Router
  * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
- * @version    $Id: Module.php 15461 2009-05-09 15:54:21Z dasprid $
+ * @version    $Id: Module.php 12310 2008-11-05 20:49:16Z dasprid $
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
@@ -78,13 +78,8 @@ class Zend_Controller_Router_Route_Module extends Zend_Controller_Router_Route_A
      */
     public static function getInstance(Zend_Config $config)
     {
-        $frontController = Zend_Controller_Front::getInstance();
-        
-        $defs       = ($config->defaults instanceof Zend_Config) ? $config->defaults->toArray() : array();
-        $dispatcher = $frontController->getDispatcher();
-        $request    = $frontController->getRequest();
-        
-        return new self($defs, $dispatcher, $request);
+        $defs = ($config->defaults instanceof Zend_Config) ? $config->defaults->toArray() : array();
+        return new self($defs);
     }
 
     /**
@@ -144,20 +139,16 @@ class Zend_Controller_Router_Route_Module extends Zend_Controller_Router_Route_A
      * @param string $path Path used to match against this routing map
      * @return array An array of assigned values or a false on a mismatch
      */
-    public function match($path, $partial = false)
+    public function match($path)
     {
         $this->_setRequestKeys();
 
         $values = array();
         $params = array();
-        
-        if (!$partial) {
-            $path = trim($path, self::URI_DELIMITER);
-        } else {
-            $matchedPath = $path;
-        }
+        $path   = trim($path, self::URI_DELIMITER);
 
         if ($path != '') {
+
             $path = explode(self::URI_DELIMITER, $path);
 
             if ($this->_dispatcher && $this->_dispatcher->isValidModule($path[0])) {
@@ -181,10 +172,6 @@ class Zend_Controller_Router_Route_Module extends Zend_Controller_Router_Route_A
                 }
             }
         }
-        
-        if ($partial) {
-            $this->setMatchedPath($matchedPath);
-        }
 
         $this->_values = $values + $params;
 
@@ -198,7 +185,7 @@ class Zend_Controller_Router_Route_Module extends Zend_Controller_Router_Route_A
      * @param bool $reset Weither to reset the current params
      * @return string Route path with user submitted parameters
      */
-    public function assemble($data = array(), $reset = false, $encode = true, $partial = false)
+    public function assemble($data = array(), $reset = false, $encode = true)
     {
         if (!$this->_keysSet) {
             $this->_setRequestKeys();

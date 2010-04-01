@@ -1,0 +1,23 @@
+<?php echo $this->doctype() ?>
+<html>
+<head>
+    <title>Supibooking</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <?php
+        // My own stylesheet
+        echo $this->headLink()->setStylesheet('/files/css/import.css');
+        // Include dojo library
+        $this->dojo()->setLocalPath('/files/js/dojo/dojo.js');
+        // Echo out the dojo <script> tags
+        echo $this->dojo();
+     ?>
+<script type="text/javascript" src="/files/js/standard.js"></script>
+</head>
+<!-- Set body class to "tundra" -->
+<body class="tundra">
+<noscript>
+    <div id="jsInfo"><h1>Javascript ist deaktiviert, Supibooking ben&ouml;tigt JavaScript!</h1></div>
+</noscript>
+<?php echo $this->layout()->content ?>
+</body>
+</html>

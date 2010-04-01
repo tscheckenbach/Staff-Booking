@@ -20,6 +20,11 @@
  */
 
 /**
+ * @see Zend_Loader
+ */
+require_once 'Zend/Loader.php';
+
+/**
  * @see Zend_Db_Adapter_Abstract
  */
 require_once 'Zend/Db/Adapter/Abstract.php';
@@ -117,11 +122,16 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
             throw new Zend_Db_Adapter_Oracle_Exception('The OCI8 extension is required for this adapter but the extension is not loaded');
         }
 
-        $this->_connection = @oci_connect(
+        if (isset($this->_config['dbname'])) {
+            $this->_connection = @oci_connect(
                 $this->_config['username'],
                 $this->_config['password'],
-                $this->_config['dbname'],
-                $this->_config['charset']);
+                $this->_config['dbname']);
+        } else {
+            $this->_connection = oci_connect(
+                $this->_config['username'],
+                $this->_config['password']);
+        }
 
         // check the connection
         if (!$this->_connection) {
@@ -198,10 +208,7 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
     {
         $this->_connect();
         $stmtClass = $this->_defaultStmtClass;
-        if (!class_exists($stmtClass)) {
-            require_once 'Zend/Loader.php';
-            Zend_Loader::loadClass($stmtClass);
-        }
+        Zend_Loader::loadClass($stmtClass);
         $stmt = new $stmtClass($this, $sql);
         if ($stmt instanceof Zend_Db_Statement_Oracle) {
             $stmt->setLobAsString($this->getLobAsString());
@@ -348,7 +355,7 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
     public function describeTable($tableName, $schemaName = null)
     {
         $version = $this->getServerVersion();
-        if (($version === null) || version_compare($version, '9.0.0', '>=')) {
+        if (is_null($version) || version_compare($version, '9.0.0', '>=')) {
             $sql = "SELECT TC.TABLE_NAME, TC.OWNER, TC.COLUMN_NAME, TC.DATA_TYPE,
                     TC.DATA_DEFAULT, TC.NULLABLE, TC.COLUMN_ID, TC.DATA_LENGTH,
                     TC.DATA_SCALE, TC.DATA_PRECISION, C.CONSTRAINT_TYPE, CC.POSITION
@@ -557,12 +564,12 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
          */
         $limit_sql = "SELECT z2.*
             FROM (
-                SELECT z1.*, ROWNUM AS \"zend_db_rownum\"
+                SELECT ROWNUM AS zend_db_rownum, z1.*
                 FROM (
                     " . $sql . "
                 ) z1
             ) z2
-            WHERE z2.\"zend_db_rownum\" BETWEEN " . ($offset+1) . " AND " . ($offset+$count);
+            WHERE z2.zend_db_rownum BETWEEN " . ($offset+1) . " AND " . ($offset+$count);
         return $limit_sql;
     }
 
@@ -629,6 +636,48 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
              . $this->quoteIdentifier($table, true)
              . ' (' . implode(', ', $cols) . ') '
              . 'VALUES (' . implode(', ', $vals) . ')';
+
+        // execute the statement and return the number of affected rows
+        $stmt = $this->query($sql, $bind);
+        $result = $stmt->rowCount();
+        return $result;
+    }
+
+    /**
+     * Updates table rows with specified data based on a WHERE clause.
+     *
+     * @param  mixed        $table The table to update.
+     * @param  array        $bind  Column-value pairs.
+     * @param  array|string $where UPDATE WHERE clause(s).
+     * @return int          The number of affected rows.
+     */
+    public function update($table, array $bind, $where = '')
+    {
+        $i = 0;
+        // build "col = ?" pairs for the statement
+        $set = array();
+        foreach ($bind as $col => $val) {
+            if ($val instanceof Zend_Db_Expr) {
+                $val = $val->__toString();
+                unset($bind[$col]);
+            } else {
+                unset($bind[$col]);
+                $bind[':'.$col.$i] = $val;
+                $val = ':'.$col.$i;
+            }
+            $set[] = $this->quoteIdentifier($col, true) . ' = ' . $val;
+            $i++;
+        }
+
+        if (is_array($where)) {
+            $where = implode(' AND ', $where);
+        }
+
+        // build the statement
+        $sql = "UPDATE "
+             . $this->quoteIdentifier($table, true)
+             . ' SET ' . implode(', ', $set)
+             . (($where) ? " WHERE $where" : '');
 
         // execute the statement and return the number of affected rows
         $stmt = $this->query($sql, $bind);

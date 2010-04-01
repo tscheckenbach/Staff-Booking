@@ -1,3 +1,9 @@
+function jumpMenue( form ) {
+    var newIndex = form.kw.selectedIndex;
+    cururl = form.kw.options[ newIndex ].value;
+    window.location.assign( cururl );
+}
+
 function bookerAction(mode,date)
 {
     var urlBase = "/cal/booker/do/";
@@ -18,7 +24,9 @@ function bookerAction(mode,date)
             break;
     }
     
-    dojo.anim(anode, {opacity: 0}, 500, null, function(){
+    dojo.anim(anode, {
+        opacity: 0
+    }, 500, null, function(){
 
         dojo.xhrGet({
             url: ZFurl,
@@ -26,7 +34,9 @@ function bookerAction(mode,date)
         });
         
         tdnode.innerHTML = newHTML;
-        dojo.anim(anode, {opacity: 100}, 500);
+        dojo.anim(anode, {
+            opacity: 100
+        }, 500);
     });
     
 }

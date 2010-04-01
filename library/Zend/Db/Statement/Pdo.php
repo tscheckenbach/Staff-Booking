@@ -37,11 +37,11 @@ require_once 'Zend/Db/Statement.php';
  * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggregate
+class Zend_Db_Statement_Pdo extends Zend_Db_Statement
 {
 
     /**
-     * The statement object.
+     * The mysqli_stmt object.
      *
      * @var PDOStatement
      */
@@ -82,7 +82,7 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
     public function bindColumn($column, &$param, $type = null)
     {
         try {
-            if ($type === null) {
+            if (is_null($type)) {
                 return $this->_stmt->bindColumn($column, $param);
             } else {
                 return $this->_stmt->bindColumn($column, $param, $type);
@@ -110,7 +110,7 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
             if ($type === null) {
                 if (is_bool($variable)) {
                     $type = PDO::PARAM_BOOL;
-                } elseif ($variable === null) {
+                } elseif (is_null($variable)) {
                     $type = PDO::PARAM_NULL;
                 } elseif (is_integer($variable)) {
                     $type = PDO::PARAM_INT;
@@ -140,7 +140,7 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
             $parameter = ":$parameter";
         }
         try {
-            if ($type === null) {
+            if (is_null($type)) {
                 return $this->_stmt->bindValue($parameter, $value);
             } else {
                 return $this->_stmt->bindValue($parameter, $value, $type);
@@ -259,16 +259,6 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
             require_once 'Zend/Db/Statement/Exception.php';
             throw new Zend_Db_Statement_Exception($e->getMessage());
         }
-    }
-
-    /**
-     * Required by IteratorAggregate interface
-     *
-     * @return IteratorIterator
-     */
-    public function getIterator()
-    {
-        return new IteratorIterator($this->_stmt);
     }
 
     /**

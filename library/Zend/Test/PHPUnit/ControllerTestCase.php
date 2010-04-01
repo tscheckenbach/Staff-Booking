@@ -58,7 +58,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
     protected $_response;
 
     /**
-     * Overloading: prevent overloading to special properties
+     * Overlaoding: prevent overloading to special properties
      * 
      * @param  string $name 
      * @param  mixed $value 
@@ -67,7 +67,6 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
     public function __set($name, $value)
     {
         if (in_array($name, array('request', 'response', 'frontController'))) {
-            require_once 'Zend/Exception.php';
             throw new Zend_Exception(sprintf('Setting %s object manually is not allowed', $name));
         }
         $this->$name = $value;

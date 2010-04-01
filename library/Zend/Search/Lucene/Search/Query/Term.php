@@ -191,13 +191,24 @@ class Zend_Search_Lucene_Search_Query_Term extends Zend_Search_Lucene_Search_Que
     }
 
     /**
-     * Query specific matches highlighting
+     * Returns query term
      *
-     * @param Zend_Search_Lucene_Search_Highlighter_Interface $highlighter  Highlighter object (also contains doc for highlighting)
+     * @return array
      */
-    protected function _highlightMatches(Zend_Search_Lucene_Search_Highlighter_Interface $highlighter)
+    public function getTerms()
     {
-    	$highlighter->highlight($this->_term->text);
+        return $this->_terms;
+    }
+
+    /**
+     * Highlight query terms
+     *
+     * @param integer &$colorIndex
+     * @param Zend_Search_Lucene_Document_Html $doc
+     */
+    public function highlightMatchesDOM(Zend_Search_Lucene_Document_Html $doc, &$colorIndex)
+    {
+        $doc->highlight($this->_term->text, $this->_getHighlightColor($colorIndex));
     }
 
     /**
@@ -208,19 +219,7 @@ class Zend_Search_Lucene_Search_Query_Term extends Zend_Search_Lucene_Search_Que
     public function __toString()
     {
         // It's used only for query visualisation, so we don't care about characters escaping
-        if ($this->_term->field !== null) {
-        	$query = $this->_term->field . ':';
-        } else {
-        	$query = '';
-        }
-
-        $query .= $this->_term->text;
-
-        if ($this->getBoost() != 1) {
-            $query = $query . '^' . round($this->getBoost(), 4);
-        }
-
-        return $query;
+        return (($this->_term->field === null)? '':$this->_term->field . ':') . $this->_term->text;
     }
 }
 

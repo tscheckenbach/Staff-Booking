@@ -1,36 +1,41 @@
 <?php
+/**
+ *
+ * calController.php
+ * @author  Thorsten Scheckenbach <t.scheckenbach@creativation.de>
+ */
 
-class CalController extends Zend_Controller_Action
+class calController extends Zend_Controller_Action
 {
     /**
-    * Redirector-Helper Object
-    *
-    * @var obj
-    */
-    protected $_redirector;
+     * Redirector-Helper Object
+     *
+     * @var obj
+     */
+	protected $_redirector;
 
-    /**
-    *
-    * @var object
-    */
+     /**
+     *
+     * @var object
+     */
     protected $model;
 
     /**
-    * Username
-    * @var string
-    */
-    protected $username = "";
+	 * Username
+	 * @var string
+	 */
+	protected $username = "";
 
     /**
      * Initialize
      */
     public function init()
     {
-        // Laden des redirector Helper
-        $this->_redirector = $this->_helper->getHelper('Redirector');
+		// Laden des redirector Helper
+		$this->_redirector = $this->_helper->getHelper('Redirector');
 
         // Laden des Models
-        $this->model = new Model_Cal();
+        $this->model = new calModel();
 
     	// Pruefen ob eingeloggt
         if(!Zend_Auth::getInstance()->hasIdentity())
@@ -50,11 +55,13 @@ class CalController extends Zend_Controller_Action
     public function showcalAction()
     {
         if(!$this->_request->isGet("week")) {
-                $weekParam = 0;
+            $this->weekParam = date("W",time());
         } else {
-                $weekParam = $this->_request->getParam("week");
+            $this->weekParam = $this->_request->getParam("week");
         }
-        $weekToDisplay = time()+(86400*7)*$weekParam;
+        $kw1 = mktime(0,0,0,1,4,date("Y"));
+        $weekToDisplay = $kw1 + 86400 * (7*($this->weekParam-1) - date('w', $kw1)+1);
+        $shownCalendarWeek = date("W",$weekToDisplay);
 
 	$this->model->makeCalCaption($weekToDisplay);
         $this->view->isArchived = $this->model->isWeekArchived($weekToDisplay);
@@ -67,35 +74,30 @@ class CalController extends Zend_Controller_Action
         $this->view->maxOpenHours = $this->model->getMaxOpenHours();
         $this->view->openCloseMatrix = $this->model->getOpenCloseMatrix();
         $this->view->bookedMatrix = $this->model->getBookedMatrix($weekToDisplay);
-        $this->view->nextWeekParam = $weekParam + 1;
-        $this->view->lastWeekParam = $weekParam - 1;
+        $this->view->shownCalendarWeek = $shownCalendarWeek;
+        $this->view->thisCalendarWeek = date("W");
     }
 
-    /**
-     * Book or unbook
-     */
-    public function bookerAction()
-    {
-            $this->_helper->viewRenderer->setNoRender();
-            $selectedDate = $this->_request->getParam("selectedDate");
-            $selectedWeek = $this->_request->getParam("week");
-            $model = new bookModel();
-            switch($this->_request->getParam("do")){
-                case "book": $model->book($selectedDate);
-                                        break;
-                case "unbook": $model->unbook($selectedDate);
-                                        break;
-                case "bookwholeday": $model->handleWholeDay($selectedDate, "book");
-                            $this->_redirect('/cal/showcal/week/' . $selectedWeek);
-                            break;
-                case "unbookwholeday": $model->handleWholeDay($selectedDate, "unbook");
-                            $this->_redirect('/cal/showcal/week/' . $selectedWeek);
-                            break;
-            }
-    }
+	/**
+	 * Book or unbook
+	 */
+	public function bookerAction()
+	{
+		$this->_helper->viewRenderer->setNoRender();
+		$selectedDate = $this->_request->getParam("selectedDate");
+        $selectedWeek = $this->_request->getParam("week");
+    	$model = new bookModel();
+    	switch($this->_request->getParam("do")){
+    		case "book": $model->book($selectedDate);
+    					break;
+    		case "unbook": $model->unbook($selectedDate);
+    					break;
+            case "bookwholeday": $model->handleWholeDay($selectedDate, "book");
+                        $this->_redirect('/cal/showcal/week/' . $selectedWeek);
+                        break;
+            case "unbookwholeday": $model->handleWholeDay($selectedDate, "unbook");
+                        $this->_redirect('/cal/showcal/week/' . $selectedWeek);
+                        break;
+    	}
+	}
 }
-
-
-
-
-

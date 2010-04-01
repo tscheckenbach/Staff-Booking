@@ -30,18 +30,12 @@ require_once 'Zend/Amf/Constants.php';
 /** Zend_Amf_Value_MessageBody */
 require_once 'Zend/Amf/Value/MessageBody.php';
 
-/** Zend_Amf_Value_MessageHeader */
-require_once 'Zend/Amf/Value/MessageHeader.php';
-
 /** Zend_Amf_Value_Messaging_CommandMessage */
 require_once 'Zend/Amf/Value/Messaging/CommandMessage.php';
 
-/** Zend_Amf_Parse_TypeLoader */
-require_once 'Zend/Amf/Parse/TypeLoader.php';
-
 /**
  * An AMF gateway server implementation to allow the connection of the Adobe Flash Player to
- * Zend Framework
+ * the Zend Framework
  *
  * @todo       Make the relection methods cache and autoload.
  * @package    Zend_Amf
@@ -87,24 +81,6 @@ class Zend_Amf_Server implements Zend_Server_Interface
     protected $_table = array();
 
     /**
-     *
-     * @var bool session flag; whether or not to add a session to each response.
-     */
-    protected $_session = false;
-
-    /**
-     * Namespace allows all AMF calls to not clobber other php session variables
-     * @var Zend_Session_NameSpace default session namespace zend_amf
-     */
-    protected $_sesionNamespace = 'zend_amf';
-
-    /**
-     * Set the default session.name if php_
-     * @var unknown_type
-     */
-    protected $_sessionName = 'PHPSESSID';
-
-    /**
      * Set production flag
      *
      * @param  bool $flag
@@ -126,26 +102,6 @@ class Zend_Amf_Server implements Zend_Server_Interface
         return $this->_production;
     }
 
-    /**
-     * @param namespace of all incoming sessions defaults to Zend_Amf
-     * @return Zend_Amf_Server
-     */
-    public function setSession($namespace = 'Zend_Amf')
-    {
-        require_once 'Zend/Session.php';
-        $this->_session = true;
-        $this->_sesionNamespace = new Zend_Session_Namespace($namespace);
-        return $this;
-    }
-
-    /**
-     * Whether of not the server is using sessions
-     * @return bool
-     */
-    public function isSession()
-    {
-        return $this->_session;
-    }
 
     /**
      * Loads a remote class or method and executes the function and returns
@@ -158,14 +114,7 @@ class Zend_Amf_Server implements Zend_Server_Interface
      */
     protected function _dispatch($method, $params = null, $source = null)
     {
-    	if($source) {
-        	if(($mapped = Zend_Amf_Parse_TypeLoader::getMappedClassName($source)) !== false) {
-        		$source = $mapped;
-        	}
-    	}
-        $qualifiedName = empty($source) ? $method : $source.".".$method;
-        
-        if (!isset($this->_table[$qualifiedName])) {
+        if (!isset($this->_table[$method])) {
             // if source is null a method that was not defined was called.
             if ($source) {
                 $classPath    = array();
@@ -178,26 +127,23 @@ class Zend_Amf_Server implements Zend_Server_Interface
                     $classPath[] = $dir . $uriclasspath;
                 }
 
-                if (!class_exists($className)) {
-                    try {
-                        require_once 'Zend/Loader.php';
-                        Zend_Loader::loadClass($className, $classPath);
-                    } catch (Exception $e) {
-                        require_once 'Zend/Amf/Server/Exception.php';
-                        throw new Zend_Amf_Server_Exception('Class "' . $className . '" does not exist');
-                    }
+                require_once('Zend/Loader.php');
+                try {
+                    Zend_Loader::loadClass($className, $classPath);
+                } catch (Exception $e) {
+                    require_once 'Zend/Amf/Server/Exception.php';
+                    throw new Zend_Amf_Server_Exception('Class "' . $className . '" does not exist');
                 }
                 // Add the new loaded class to the server.
-                $this->setClass($className, $source);
+                $this->setClass($className);
             } else {
                 require_once 'Zend/Amf/Server/Exception.php';
                 throw new Zend_Amf_Server_Exception('Method "' . $method . '" does not exist');
             }
         }
 
-        $info = $this->_table[$qualifiedName];
+        $info = $this->_table[$method];
         $argv = $info->getInvokeArguments();
-        
         if (0 < count($argv)) {
             $params = array_merge($params, $argv);
         }
@@ -316,7 +262,7 @@ class Zend_Amf_Server implements Zend_Server_Interface
                         if ($source) {
                             // Break off method name from namespace into source
                             $method = substr(strrchr($targetURI, '.'), 1);
-                            $return = $this->_dispatch($method, $body->getData(), $source);
+                            $return = $this->_dispatch($method, array($body->getData()), $source);
                         } else {
                             // Just have a method name.
                             $return = $this->_dispatch($targetURI, $body->getData());
@@ -349,23 +295,6 @@ class Zend_Amf_Server implements Zend_Server_Interface
             $newBody     = new Zend_Amf_Value_MessageBody($responseURI, null, $return);
             $response->addAmfBody($newBody);
         }
-        // Add a session header to the body if session is requested.
-        if($this->isSession()) {
-           $currentID = session_id();
-           $joint = "?";
-           if(isset($_SERVER['QUERY_STRING'])) {
-               if(!strpos($_SERVER['QUERY_STRING'], $currentID) !== FALSE) {
-                   if(strrpos($_SERVER['QUERY_STRING'], "?") !== FALSE) {
-                       $joint = "&";
-                   } 
-               }    
-           }
-           
-            // create a new AMF message header with the session id as a variable.
-            $sessionValue = $joint . $this->_sessionName . "=" . $currentID;
-            $sessionHeader = new Zend_Amf_Value_MessageHeader("AppendToGatewayUrl", false, $sessionValue);
-            $response->addAmfHeader($sessionHeader);
-        }
 
         // serialize the response and return serialized body.
         $response->finalize();
@@ -384,12 +313,6 @@ class Zend_Amf_Server implements Zend_Server_Interface
             $request = $this->getRequest();
         } else {
             $this->setRequest($request);
-        }
-        if ($this->isSession()) {
-             // Check if a session is being sent from the amf call
-             if (isset($_COOKIE[$this->_sessionName])) {
-                 session_id($_COOKIE[$this->_sessionName]);
-             }
         }
 
         // Check for errors that may have happend in deserialization of Request.
@@ -482,6 +405,15 @@ class Zend_Amf_Server implements Zend_Server_Interface
     }
 
     /**
+     * Add a file system path to a directory of services.
+     * @param string|array $path
+     */
+    public function setClassPath($path)
+    {
+
+    }
+
+    /**
      * Attach a class or object to the server
      *
      * Class may be either a class name or an instantiated object. Reflection
@@ -510,13 +442,6 @@ class Zend_Amf_Server implements Zend_Server_Interface
         if (2 < func_num_args()) {
             $argv = array_slice(func_get_args(), 2);
         }
-
-        // Use the class name as the name space by default.
-        
-        if ($namespace == '') {
-            $namespace = is_object($class) ? get_class($class) : $class;
-        }
-        
 
         $this->_methods[] = Zend_Server_Reflection::reflectClass($class, $argv, $namespace);
         $this->_buildDispatchTable();
@@ -579,7 +504,7 @@ class Zend_Amf_Server implements Zend_Server_Interface
      */
     public function getDirectory()
     {
-        return $this->_directories;
+        return $_directory;
     }
 
     /**
@@ -624,8 +549,6 @@ class Zend_Amf_Server implements Zend_Server_Interface
         }
         $this->_table = $table;
     }
-
-
 
     /**
      * Raise a server fault

@@ -16,7 +16,7 @@
  * @package    Zend_Config
  * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Xml.php 14267 2009-03-10 15:49:03Z dasprid $
+ * @version    $Id: Xml.php 13709 2009-01-20 12:26:34Z dasprid $
  */
 
 /**
@@ -113,20 +113,20 @@ class Zend_Config_Writer_Xml extends Zend_Config_Writer
         if (is_string($sectionName)) {
             $child = $xml->addChild($sectionName);
 
-            $this->_addBranch($this->_config, $child, $xml);
+            $this->_addBranch($this->_config, $child);
         } else {
             foreach ($this->_config as $sectionName => $data) {
                 if (!($data instanceof Zend_Config)) {
-                    $xml->addChild($sectionName, (string) $data);
-                } else {
-                    $child = $xml->addChild($sectionName);
-                    
-                    if (isset($extends[$sectionName])) {
-                        $child->addAttribute('extends', $extends[$sectionName]);
-                    }
-        
-                    $this->_addBranch($data, $child, $xml);
+                    continue;
                 }
+            
+                $child = $xml->addChild($sectionName);
+                
+                if (isset($extends[$sectionName])) {
+                    $child->addAttribute('extends', $extends[$sectionName]);
+                }
+    
+                $this->_addBranch($data, $child);
             }
         }
                 
@@ -154,45 +154,27 @@ class Zend_Config_Writer_Xml extends Zend_Config_Writer
      *
      * @param  Zend_Config      $config
      * @param  SimpleXMLElement $xml
-     * @param  SimpleXMLElement $parent
      * @return void
      */
-    protected function _addBranch(Zend_Config $config, SimpleXMLElement $xml, SimpleXMLElement $parent)
+    protected function _addBranch(Zend_Config $config, SimpleXMLElement $xml)
     {
-        $branchType = null;
-        
         foreach ($config as $key => $value) {
-            if ($branchType === null) {
-                if (is_numeric($key)) {
-                    $branchType = 'numeric';
-                    $branchName = $xml->getName();
-                    $xml        = $parent;
-                    
-                    unset($parent->{$branchName});
-                } else {
-                    $branchType = 'string';
-                }
-            } else if ($branchType !== (is_numeric($key) ? 'numeric' : 'string')) {
-                require_once 'Zend/Config/Exception.php';
-                throw new Zend_Config_Exception('Mixing of string and numeric keys is not allowed');                
+            if ($value instanceof Zend_Config) {
+                $child = $xml->addChild($key);
+
+                $this->_addBranch($value, $child);
+            } else {
+                $xml->addChild($key, (string) $value);
             }
-            
-            if ($branchType === 'numeric') {
-                if ($value instanceof Zend_Config) {
-                    $child = $parent->addChild($branchName, (string) $value);
-    
-                    $this->_addBranch($value, $child, $parent);
-                } else {
-                    $parent->addChild($branchName, (string) $value);
-                }
-            } else {            
-                if ($value instanceof Zend_Config) {
-                    $child = $xml->addChild($key);
-    
-                    $this->_addBranch($value, $child, $xml);
-                } else {
-                    $xml->addChild($key, (string) $value);
-                }
+        }
+    }
+}
+lue instanceof Zend_Config) {
+                $child = $xml->addChild($key);
+
+                $this->_addBranch($value, $child);
+            } else {
+                $xml->addChild($key, (string) $value);
             }
         }
     }

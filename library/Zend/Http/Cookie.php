@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Zend Framework
  *
@@ -17,12 +16,11 @@
  * @package    Zend_Http
  * @subpackage Cookie
  * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com/)
- * @version    $Id: Cookie.php 14530 2009-03-29 14:17:14Z shahar $
+ * @version    $Id: Cookie.php 9098 2008-03-30 19:29:10Z thomas $
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
 require_once 'Zend/Uri/Http.php';
-
 
 /**
  * Zend_Http_Cookie is a class describing an HTTP cookie and all it's parameters.
@@ -36,8 +34,8 @@ require_once 'Zend/Uri/Http.php';
  *
  * See http://wp.netscape.com/newsref/std/cookie_spec.html for some specs.
  *
- * @category   Zend
- * @package    Zend_Http
+ * @category    Zend
+ * @package     Zend_Http
  * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com/)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
@@ -92,8 +90,8 @@ class Zend_Http_Cookie
      *
      * @param string $name
      * @param string $value
-     * @param string $domain
      * @param int $expires
+     * @param string $domain
      * @param string $path
      * @param bool $secure
      */
@@ -224,7 +222,7 @@ class Zend_Http_Cookie
 
         // Make sure we have a valid Zend_Uri_Http object
         if (! ($uri->valid() && ($uri->getScheme() == 'http' || $uri->getScheme() =='https'))) {
-            require_once 'Zend/Http/Exception.php';
+            require_once 'Zend/Http/Exception.php';    
             throw new Zend_Http_Exception('Passed URI is not a valid HTTP or HTTPS URI');
         }
 
@@ -306,29 +304,14 @@ class Zend_Http_Cookie
                 list($k, $v) = $keyValue;
                 switch (strtolower($k))    {
                     case 'expires':
-                        if(($expires = strtotime($v)) === false) {
-                            /**
-                             * The expiration is past Tue, 19 Jan 2038 03:14:07 UTC
-                             * the maximum for 32-bit signed integer. Zend_Date
-                             * can get around that limit.
-                             * 
-                             * @see Zend_Date
-                             */
-                            require_once 'Zend/Date.php';
-    
-                            $expireDate = new Zend_Date($v);
-                            $expires = $expireDate->getTimestamp();
-                        }
+                        $expires = strtotime($v);
                         break;
-                        
                     case 'path':
                         $path = $v;
                         break;
-                        
                     case 'domain':
                         $domain = $v;
                         break;
-                        
                     default:
                         break;
                 }
@@ -336,7 +319,7 @@ class Zend_Http_Cookie
         }
 
         if ($name !== '') {
-            return new self($name, $value, $domain, $expires, $path, $secure);
+            return new Zend_Http_Cookie($name, $value, $domain, $expires, $path, $secure);
         } else {
             return false;
         }

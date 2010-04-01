@@ -12,10 +12,27 @@
                     }
                 ?>
             </h1>
+            <form id="kw-form" name="kw-form">
+                KW wählen: <select name="kw" id="kw" onChange="jumpMenue( this.form )">
+                    <?php
+                        for ($i=($this->shownCalendarWeek-6);$i<=($this->shownCalendarWeek+10);$i++){
+
+                            if($i == $this->thisCalendarWeek){
+                                $thisWeekDesc = "Aktuell: ";
+                            }else{
+                                $thisWeekDesc = "";
+                            }
+
+                            if($i == $this->shownCalendarWeek){
+                                echo '<option value="' . $this->url(array('controller'=>'admincal','action'=>'showcal', 'week'=>$i)) . '" selected="selected" />' . $thisWeekDesc . $i . '</option>';
+                            }else{
+                                echo '<option value="' . $this->url(array('controller'=>'admincal','action'=>'showcal', 'week'=>$i)) . '" />' . $thisWeekDesc . $i . '</option>';
+                            }
+                        }
+                    ?>
+                </select>
+            </form>
             <ul id="calNavigation">
-                <li><a href="<?php echo $this->url(array('controller'=>'admincal','action'=>'showcal', 'week'=>$this->lastWeekParam));?>" title="Letzte Woche"><img src="/files/images/arrow_back.png" />Letzte Woche</a></li>
-                <li><a href="<?php echo $this->url(array('controller'=>'admincal','action'=>'showcal', 'week'=>0));?>" title="Aktuelle Woche"><img src="/files/images/arrow_top.png" />Aktuelle Woche</a></li>
-                <li><a href="<?php echo $this->url(array('controller'=>'admincal','action'=>'showcal', 'week'=>$this->nextWeekParam));?>" title="N&auml;chste Woche"><img src="/files/images/arrow_next.png" />N&auml;chste Woche</a></li>
                 <?php
                     if($this->isArchived == false){
                         echo '<li><a href="' . $this->url(array('controller'=>'admincal','action'=>'archive', 'dayOfThisWeek'=>$this->dayOfThisWeek)) . '" title="Supis können keine &Auml;derungen mehr vornehmen"><img src="/files/images/save.png" />Woche deaktivieren</a></li>';

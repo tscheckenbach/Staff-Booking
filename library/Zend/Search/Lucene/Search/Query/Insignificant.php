@@ -118,11 +118,12 @@ class Zend_Search_Lucene_Search_Query_Insignificant extends Zend_Search_Lucene_S
     }
 
     /**
-     * Query specific matches highlighting
+     * Highlight query terms
      *
-     * @param Zend_Search_Lucene_Search_Highlighter_Interface $highlighter  Highlighter object (also contains doc for highlighting)
+     * @param integer &$colorIndex
+     * @param Zend_Search_Lucene_Document_Html $doc
      */
-    protected function _highlightMatches(Zend_Search_Lucene_Search_Highlighter_Interface $highlighter)
+    public function highlightMatchesDOM(Zend_Search_Lucene_Document_Html $doc, &$colorIndex)
     {
         // Do nothing
     }

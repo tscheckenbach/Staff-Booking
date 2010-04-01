@@ -174,7 +174,7 @@ abstract class Zend_Pdf_FileParser_Font extends Zend_Pdf_FileParser
      */
     public function __set($property, $value)
     {
-        if ($value === null) {
+        if (is_null($value)) {
             unset($this->_fontProperties[$property]);
         } else {
             $this->_fontProperties[$property] = $value;
@@ -203,9 +203,7 @@ abstract class Zend_Pdf_FileParser_Font extends Zend_Pdf_FileParser
             $message = array_shift($args);
             $message = vsprintf($message, $args);
         }
-
-        $logger = new Zend_Log();
-        $logger->log($message, Zend_Log::DEBUG);
+        Zend_Log::log($message, Zend_Log::LEVEL_DEBUG, 'ZF');
     }
 
 }

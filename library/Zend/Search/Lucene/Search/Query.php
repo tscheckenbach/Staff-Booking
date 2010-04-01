@@ -25,9 +25,6 @@ require_once 'Zend/Search/Lucene/Document/Html.php';
 /** Zend_Search_Lucene_Index_DocsFilter */
 require_once 'Zend/Search/Lucene/Index/DocsFilter.php';
 
-/** Zend_Search_Lucene_Search_Highlighter_Default */
-require_once 'Zend/Search/Lucene/Search/Highlighter/Default.php';
-
 
 /**
  * @category   Zend
@@ -38,6 +35,7 @@ require_once 'Zend/Search/Lucene/Search/Highlighter/Default.php';
  */
 abstract class Zend_Search_Lucene_Search_Query
 {
+
     /**
      * query boost factor
      *
@@ -58,6 +56,17 @@ abstract class Zend_Search_Lucene_Search_Query
      * @var integer
      */
     private $_currentColorIndex = 0;
+
+    /**
+     * List of colors for text highlighting
+     *
+     * @var array
+     */
+    private $_highlightColors = array('#66ffff', '#ff66ff', '#ffff66',
+                                      '#ff8888', '#88ff88', '#8888ff',
+                                      '#88dddd', '#dd88dd', '#dddd88',
+                                      '#aaddff', '#aaffdd', '#ddaaff', '#ddffaa', '#ffaadd', '#ffddaa');
+
 
     /**
      * Gets the boost for this clause.  Documents matching
@@ -177,57 +186,42 @@ abstract class Zend_Search_Lucene_Search_Query
     abstract public function getQueryTerms();
 
     /**
-     * Query specific matches highlighting
+     * Get highlight color and shift to next
      *
-     * @param Zend_Search_Lucene_Search_Highlighter_Interface $highlighter  Highlighter object (also contains doc for highlighting)
+     * @param integer &$colorIndex
+     * @return string
      */
-    abstract protected function _highlightMatches(Zend_Search_Lucene_Search_Highlighter_Interface $highlighter);
+    protected function _getHighlightColor(&$colorIndex)
+    {
+        $color = $this->_highlightColors[$colorIndex++];
+
+        $colorIndex %= count($this->_highlightColors);
+
+        return $color;
+    }
+
+    /**
+     * Highlight query terms
+     *
+     * @param integer &$colorIndex
+     * @param Zend_Search_Lucene_Document_Html $doc
+     */
+    abstract public function highlightMatchesDOM(Zend_Search_Lucene_Document_Html $doc, &$colorIndex);
 
     /**
      * Highlight matches in $inputHTML
      *
      * @param string $inputHTML
-     * @param string  $defaultEncoding   HTML encoding, is used if it's not specified using Content-type HTTP-EQUIV meta tag.
-     * @param Zend_Search_Lucene_Search_Highlighter_Interface|null $highlighter
      * @return string
      */
-    public function highlightMatches($inputHTML, $defaultEncoding = '', $highlighter = null)
+    public function highlightMatches($inputHTML)
     {
-        if ($highlighter === null) {
-        	$highlighter = new Zend_Search_Lucene_Search_Highlighter_Default();
-        }
+        $doc = Zend_Search_Lucene_Document_Html::loadHTML($inputHTML);
 
-        $doc = Zend_Search_Lucene_Document_Html::loadHTML($inputHTML, false, $defaultEncoding);
-        $highlighter->setDocument($doc);
-
-        $this->_highlightMatches($highlighter);
+        $colorIndex = 0;
+        $this->highlightMatchesDOM($doc, $colorIndex);
 
         return $doc->getHTML();
-    }
-
-    /**
-     * Highlight matches in $inputHtmlFragment and return it (without HTML header and body tag)
-     *
-     * @param string $inputHtmlFragment
-     * @param string  $encoding   Input HTML string encoding
-     * @param Zend_Search_Lucene_Search_Highlighter_Interface|null $highlighter
-     * @return string
-     */
-    public function htmlFragmentHighlightMatches($inputHtmlFragment, $encoding = 'UTF-8', $highlighter = null)
-    {
-        if ($highlighter === null) {
-            $highlighter = new Zend_Search_Lucene_Search_Highlighter_Default();
-        }
-
-        $inputHTML = '<html><head><META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=UTF-8"/></head><body>'
-                   . iconv($encoding, 'UTF-8//IGNORE', $inputHtmlFragment) . '</body></html>';
-
-    	$doc = Zend_Search_Lucene_Document_Html::loadHTML($inputHTML);
-        $highlighter->setDocument($doc);
-
-        $this->_highlightMatches($highlighter);
-
-        return $doc->getHtmlBody();
     }
 }
 

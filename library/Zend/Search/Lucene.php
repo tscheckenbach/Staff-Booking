@@ -63,11 +63,8 @@ require_once 'Zend/Search/Lucene/Search/QueryHit.php';
 /** Zend_Search_Lucene_Search_Similarity */
 require_once 'Zend/Search/Lucene/Search/Similarity.php';
 
-/** Zend_Search_Lucene_Index_TermsPriorityQueue */
-require_once 'Zend/Search/Lucene/Index/TermsPriorityQueue.php';
-
-/** Zend_Search_Lucene_TermStreamsPriorityQueue */
-require_once 'Zend/Search/Lucene/TermStreamsPriorityQueue.php';
+/** Zend_Search_Lucene_Index_SegmentInfoPriorityQueue */
+require_once 'Zend/Search/Lucene/Index/SegmentInfoPriorityQueue.php';
 
 /** Zend_Search_Lucene_Index_DocsFilter */
 require_once 'Zend/Search/Lucene/Index/DocsFilter.php';
@@ -106,15 +103,6 @@ class Zend_Search_Lucene implements Zend_Search_Lucene_Interface
      * @var integer
      */
     private static $_resultSetLimit = 0;
-
-    /**
-     * Terms per query limit
-     *
-     * 0 means no limit
-     *
-     * @var integer
-     */
-    private static $_termsPerQueryLimit = 1024;
 
     /**
      * File system adapter.
@@ -183,7 +171,6 @@ class Zend_Search_Lucene implements Zend_Search_Lucene_Interface
     const FORMAT_PRE_2_1 = 0;
     const FORMAT_2_1     = 1;
     const FORMAT_2_3     = 2;
-
 
     /**
      * Index format version
@@ -741,7 +728,7 @@ class Zend_Search_Lucene implements Zend_Search_Lucene_Interface
     }
 
     /**
-     * Get result set limit.
+     * Set result set limit.
      *
      * 0 means no limit
      *
@@ -750,30 +737,6 @@ class Zend_Search_Lucene implements Zend_Search_Lucene_Interface
     public static function getResultSetLimit()
     {
         return self::$_resultSetLimit;
-    }
-
-    /**
-     * Set terms per query limit.
-     *
-     * 0 means no limit
-     *
-     * @param integer $limit
-     */
-    public static function setTermsPerQueryLimit($limit)
-    {
-        self::$_termsPerQueryLimit = $limit;
-    }
-
-    /**
-     * Get result set limit.
-     *
-     * 0 (default) means no limit
-     *
-     * @return integer
-     */
-    public static function getTermsPerQueryLimit()
-    {
-        return self::$_termsPerQueryLimit;
     }
 
     /**
@@ -1047,7 +1010,6 @@ class Zend_Search_Lucene implements Zend_Search_Lucene_Interface
      *
      * @param integer|Zend_Search_Lucene_Search_QueryHit $id
      * @return Zend_Search_Lucene_Document
-     * @throws Zend_Search_Lucene_Exception    Exception is thrown if $id is out of the range
      */
     public function getDocument($id)
     {
@@ -1416,10 +1378,10 @@ class Zend_Search_Lucene implements Zend_Search_Lucene_Interface
     {
         $result = array();
 
-        $segmentInfoQueue = new Zend_Search_Lucene_Index_TermsPriorityQueue();
+        $segmentInfoQueue = new Zend_Search_Lucene_Index_SegmentInfoPriorityQueue();
 
         foreach ($this->_segmentInfos as $segmentInfo) {
-            $segmentInfo->resetTermsStream();
+            $segmentInfo->reset();
 
             // Skip "empty" segments
             if ($segmentInfo->currentTerm() !== null) {
@@ -1446,22 +1408,36 @@ class Zend_Search_Lucene implements Zend_Search_Lucene_Interface
 
 
     /**
-     * Terms stream priority queue object
+     * Terms stream queue
      *
-     * @var Zend_Search_Lucene_termStreamsPriorityQueue
+     * @var Zend_Search_Lucene_Index_SegmentInfoPriorityQueue
      */
-    private $_termsStream = null;
+    private $_termsStreamQueue = null;
+
+    /**
+     * Last Term in a terms stream
+     *
+     * @var Zend_Search_Lucene_Index_Term
+     */
+    private $_lastTerm = null;
 
     /**
      * Reset terms stream.
      */
     public function resetTermsStream()
     {
-    	if ($this->_termsStream === null) {
-            $this->_termsStream = new Zend_Search_Lucene_termStreamsPriorityQueue($this->_segmentInfos);
-    	} else {
-    		$this->_termsStream->resetTermsStream();
-    	}
+        $this->_termsStreamQueue = new Zend_Search_Lucene_Index_SegmentInfoPriorityQueue();
+
+        foreach ($this->_segmentInfos as $segmentInfo) {
+            $segmentInfo->reset();
+
+            // Skip "empty" segments
+            if ($segmentInfo->currentTerm() !== null) {
+                $this->_termsStreamQueue->put($segmentInfo);
+            }
+        }
+
+        $this->nextTerm();
     }
 
     /**
@@ -1473,7 +1449,21 @@ class Zend_Search_Lucene implements Zend_Search_Lucene_Interface
      */
     public function skipTo(Zend_Search_Lucene_Index_Term $prefix)
     {
-        $this->_termsStream->skipTo($prefix);
+        $segments = array();
+
+        while (($segmentInfo = $this->_termsStreamQueue->pop()) !== null) {
+            $segments[] = $segmentInfo;
+        }
+
+        foreach ($segments as $segmentInfo) {
+            $segmentInfo->skipTo($prefix);
+
+            if ($segmentInfo->currentTerm() !== null) {
+                $this->_termsStreamQueue->put($segmentInfo);
+            }
+        }
+
+        $this->nextTerm();
     }
 
     /**
@@ -1483,7 +1473,31 @@ class Zend_Search_Lucene implements Zend_Search_Lucene_Interface
      */
     public function nextTerm()
     {
-        return $this->_termsStream->nextTerm();
+        while (($segmentInfo = $this->_termsStreamQueue->pop()) !== null) {
+            if ($this->_termsStreamQueue->top() === null ||
+                $this->_termsStreamQueue->top()->currentTerm()->key() !=
+                            $segmentInfo->currentTerm()->key()) {
+                // We got new term
+                $this->_lastTerm = $segmentInfo->currentTerm();
+
+                if ($segmentInfo->nextTerm() !== null) {
+                    // Put segment back into the priority queue
+                    $this->_termsStreamQueue->put($segmentInfo);
+                }
+
+                return $this->_lastTerm;
+            }
+
+            if ($segmentInfo->nextTerm() !== null) {
+                // Put segment back into the priority queue
+                $this->_termsStreamQueue->put($segmentInfo);
+            }
+        }
+
+        // End of stream
+        $this->_lastTerm = null;
+
+        return null;
     }
 
     /**
@@ -1493,7 +1507,7 @@ class Zend_Search_Lucene implements Zend_Search_Lucene_Interface
      */
     public function currentTerm()
     {
-        return $this->_termsStream->currentTerm();
+        return $this->_lastTerm;
     }
 
     /**
@@ -1503,8 +1517,12 @@ class Zend_Search_Lucene implements Zend_Search_Lucene_Interface
      */
     public function closeTermsStream()
     {
-        $this->_termsStream->closeTermsStream();
-        $this->_termsStream = null;
+        while (($segmentInfo = $this->_termsStreamQueue->pop()) !== null) {
+            $segmentInfo->closeTermsStream();
+        }
+
+        $this->_termsStreamQueue = null;
+        $this->_lastTerm         = null;
     }
 
 

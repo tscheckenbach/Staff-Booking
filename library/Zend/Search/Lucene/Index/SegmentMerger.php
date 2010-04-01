@@ -25,8 +25,8 @@ require_once 'Zend/Search/Lucene/Index/SegmentInfo.php';
 /** Zend_Search_Lucene_Index_SegmentWriter_StreamWriter */
 require_once 'Zend/Search/Lucene/Index/SegmentWriter/StreamWriter.php';
 
-/** Zend_Search_Lucene_Index_TermsPriorityQueue */
-require_once 'Zend/Search/Lucene/Index/TermsPriorityQueue.php';
+/** Zend_Search_Lucene_Index_SegmentInfoPriorityQueue */
+require_once 'Zend/Search/Lucene/Index/SegmentInfoPriorityQueue.php';
 
 /**
  * @category   Zend
@@ -225,11 +225,11 @@ class Zend_Search_Lucene_Index_SegmentMerger
      */
     private function _mergeTerms()
     {
-        $segmentInfoQueue = new Zend_Search_Lucene_Index_TermsPriorityQueue();
+        $segmentInfoQueue = new Zend_Search_Lucene_Index_SegmentInfoPriorityQueue();
 
         $segmentStartId = 0;
         foreach ($this->_segmentInfos as $segName => $segmentInfo) {
-            $segmentStartId = $segmentInfo->resetTermsStream($segmentStartId, Zend_Search_Lucene_Index_SegmentInfo::SM_MERGE_INFO);
+            $segmentStartId = $segmentInfo->reset($segmentStartId, Zend_Search_Lucene_Index_SegmentInfo::SM_MERGE_INFO);
 
             // Skip "empty" segments
             if ($segmentInfo->currentTerm() !== null) {

@@ -15,7 +15,7 @@
  * @category   Zend
  * @package    Zend_Http
  * @subpackage CookieJar
- * @version    $Id: CookieJar.php 13641 2009-01-14 21:58:25Z doctorrock83 $
+ * @version    $Id: CookieJar.php 9098 2008-03-30 19:29:10Z thomas $
  * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com/)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
@@ -48,7 +48,7 @@ require_once "Zend/Http/Response.php";
  * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com/)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Zend_Http_CookieJar implements Countable, IteratorAggregate 
+class Zend_Http_CookieJar
 {
     /**
      * Return cookie(s) as a Zend_Http_Cookie object
@@ -88,13 +88,6 @@ class Zend_Http_CookieJar implements Countable, IteratorAggregate
     protected $cookies = array();
 
     /**
-     * The Zend_Http_Cookie array
-     *
-     * @var array
-     */
-    protected $_rawCookies = array();
-
-    /**
      * Construct a new CookieJar object
      *
      */
@@ -120,7 +113,6 @@ class Zend_Http_CookieJar implements Countable, IteratorAggregate
             if (! isset($this->cookies[$domain])) $this->cookies[$domain] = array();
             if (! isset($this->cookies[$domain][$path])) $this->cookies[$domain][$path] = array();
             $this->cookies[$domain][$path][$cookie->getName()] = $cookie;
-            $this->_rawCookies[] = $cookie;
         } else {
             require_once 'Zend/Http/Exception.php';
             throw new Zend_Http_Exception('Supplient argument is not a valid cookie string or object');
@@ -354,46 +346,5 @@ class Zend_Http_CookieJar implements Countable, IteratorAggregate
         $jar = new self();
         $jar->addCookiesFromResponse($response, $ref_uri);
         return $jar;
-    }
-
-    /**
-     * Required by Countable interface
-     *
-     * @return int
-     */
-    public function count()
-    {
-        return count($this->_rawCookies);
-    }
-
-    /**
-     * Required by IteratorAggregate interface
-     *
-     * @return ArrayIterator
-     */
-    public function getIterator()
-    {
-        return new ArrayIterator($this->_rawCookies);
-    }
-
-    /**
-     * Tells if the jar is empty of any cookie
-     *
-     * @return bool
-     */
-    public function isEmpty()
-    {
-        return count($this) == 0;
-    }
-
-    /**
-     * Empties the cookieJar of any cookie
-     *
-     * @return Zend_Http_CookieJar
-     */
-    public function reset()
-    {
-        $this->cookies = $this->_rawCookies = array();
-        return $this;
     }
 }

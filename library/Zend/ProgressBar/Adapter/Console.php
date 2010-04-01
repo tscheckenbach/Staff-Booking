@@ -14,18 +14,13 @@
  * @package    Zend_ProgressBar
  * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Console.php 14557 2009-03-31 12:06:30Z dasprid $
+ * @version    $Id: Console.php 14112 2009-02-19 06:32:51Z yoshida@zend.co.jp $
  */
 
 /**
  * @see Zend_ProgressBar_Adapter
  */
 require_once 'Zend/ProgressBar/Adapter.php';
-
-/**
- * @see Zend_Text_MultiByte
- */
-require_once 'Zend/Text/MultiByte.php';
 
 /**
  * Zend_ProgressBar_Adapter_Console offers a text-based progressbar for console
@@ -126,11 +121,11 @@ class Zend_ProgressBar_Adapter_Console extends Zend_ProgressBar_Adapter
     protected $_barRightChar = '-';
 
     /**
-     * Output-stream, when STDOUT is not defined (e.g. in CGI) or set manually
+     * Stdout stream, when STDOUT is not defined (e.g. in CGI)
      *
      * @var resource
      */
-    protected $_outputStream = null;
+    protected $_stdout = null;
 
     /**
      * Width of the text element
@@ -145,13 +140,6 @@ class Zend_ProgressBar_Adapter_Console extends Zend_ProgressBar_Adapter
      * @var boolean
      */
     protected $_outputStarted = false;
-    
-    /**
-     * Charset of text element
-     *
-     * @var string
-     */
-    protected $_charset = 'utf-8';
 
     /**
      * Defined by Zend_ProgressBar_Adapter
@@ -160,6 +148,11 @@ class Zend_ProgressBar_Adapter_Console extends Zend_ProgressBar_Adapter
      */
     public function __construct($options = null)
     {
+        // If STDOUT isn't defined, open a local resource
+        if (!defined('STDOUT')) {
+            $this->_stdout = fopen('php://stdout', 'w');
+        }
+
         // Call parent constructor with options
         parent::__construct($options);
 
@@ -174,51 +167,11 @@ class Zend_ProgressBar_Adapter_Console extends Zend_ProgressBar_Adapter
      */
     public function __destruct()
     {
-        if ($this->_outputStream !== null) {
-            fclose($this->_outputStream);
+        if ($this->_stdout !== null) {
+            fclose($this->_stdout);
         }
     }
 
-    /**
-     * Set a different output-stream
-     *
-     * @param  string $resource
-     * @return Zend_ProgressBar_Adapter_Console
-     */
-    public function setOutputStream($resource)
-    {
-       $stream = @fopen($resource, 'w');
-
-       if ($stream === false) {
-            require_once 'Zend/ProgressBar/Adapter/Exception.php';
-            throw new Zend_ProgressBar_Adapter_Exception('Unable to open stream');
-       }
-
-       if ($this->_outputStream !== null) {
-           fclose($this->_outputStream);
-       }
-       
-       $this->_outputStream = $stream;
-    }
-    
-    /**
-     * Get the current output stream
-     *
-     * @return resource
-     */
-    public function getOutputStream()
-    {
-        if ($this->_outputStream === null) {
-            if (!defined('STDOUT')) {
-                $this->_outputStream = fopen('php://stdout', 'w');    
-            } else {
-                return STDOUT;
-            }
-        }
-        
-        return $this->_outputStream;
-    }
-    
     /**
      * Set the width of the progressbar
      *
@@ -347,16 +300,6 @@ class Zend_ProgressBar_Adapter_Console extends Zend_ProgressBar_Adapter
     }
 
     /**
-     * Set the charset of the text element
-     *
-     * @param string $charset
-     */
-    public function setCharset($charset)
-    {
-        $this->_charset = $charset;
-    }
-    
-    /**
      * Set the finish action
      *
      * @param  string $action
@@ -455,7 +398,7 @@ class Zend_ProgressBar_Adapter_Console extends Zend_ProgressBar_Adapter
                     break;
 
                 case self::ELEMENT_TEXT:
-                    $renderedElements[] = Zend_Text_MultiByte::strPad(substr($text, 0, $this->_textWidth), $this->_textWidth, ' ', STR_PAD_RIGHT, $this->_charset);
+                    $renderedElements[] = str_pad(substr($text, 0, $this->_textWidth), $this->_textWidth, ' ');
                     break;
             }
         }
@@ -529,6 +472,10 @@ class Zend_ProgressBar_Adapter_Console extends Zend_ProgressBar_Adapter
      */
     protected function _outputData($data)
     {
-        fwrite($this->getOutputStream(), $data);
+        if ($this->_stdout !== null) {
+            fwrite($this->_stdout, $data);
+        } else {
+            fwrite(STDOUT, $data);
+        }
     }
 }

@@ -1,0 +1,27 @@
+    <?php
+
+    Zend_Dojo_View_Helper_Dojo::setUseDeclarative();
+
+    $this->dojo()->setLocalPath('/files/js/dojo/dojo.js')
+
+    ->addStyleSheetModule('dijit.themes.tundra')
+
+    ->addStylesheet('/files/js/dojo/dojox/grid/_grid/tundraGrid.css');
+
+    echo $this->dojo();
+
+    ?>
+
+    <script type="text/javascript">
+    dojo.require("dojox.data.QueryReadStore");
+    dojo.require("dijit.form.ComboBox");
+    dojo.require("dojo.parser");
+    </script>
+
+    <div dojoType="dojox.data.QueryReadStore" jsId="testStore" url="records"></div>
+
+    <?
+
+    echo $this->form;
+
+    ?>

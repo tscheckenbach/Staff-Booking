@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework
  *
@@ -16,18 +17,15 @@
  * @package    Zend_Validate
  * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Float.php 13375 2008-12-19 14:16:40Z thomas $
+ * @version    $Id: Float.php 8714 2008-03-09 20:03:45Z thomas $
  */
+
 
 /**
  * @see Zend_Validate_Abstract
  */
 require_once 'Zend/Validate/Abstract.php';
 
-/**
- * @see Zend_Locale_Format
- */
-require_once 'Zend/Locale/Format.php';
 
 /**
  * @category   Zend
@@ -47,38 +45,6 @@ class Zend_Validate_Float extends Zend_Validate_Abstract
         self::NOT_FLOAT => "'%value%' does not appear to be a float"
     );
 
-    protected $_locale;
-
-    /**
-     * Constructor for the float validator
-     *
-     * @param string|Zend_Locale $locale
-     */
-    public function __construct($locale = null)
-    {
-        $this->setLocale($locale);
-    }
-
-    /**
-     * Returns the set locale
-     */
-    public function getLocale()
-    {
-        return $this->_locale;
-    }
-
-    /**
-     * Sets the locale to use
-     *
-     * @param string|Zend_Locale $locale
-     */
-    public function setLocale($locale = null)
-    {
-        require_once 'Zend/Locale.php';
-        $this->_locale = Zend_Locale::findLocale($locale);
-        return $this;
-    }
-
     /**
      * Defined by Zend_Validate_Interface
      *
@@ -93,16 +59,17 @@ class Zend_Validate_Float extends Zend_Validate_Abstract
 
         $this->_setValue($valueString);
 
-        try {
-            if (!Zend_Locale_Format::isFloat($value, array('locale' => $this->_locale))) {
-                $this->_error();
-                return false;
-            }
-        } catch (Zend_Locale_Exception $e) {
+        $locale = localeconv();
+
+        $valueFiltered = str_replace($locale['thousands_sep'], '', $valueString);
+        $valueFiltered = str_replace($locale['decimal_point'], '.', $valueFiltered);
+
+        if (strval(floatval($valueFiltered)) != $valueFiltered) {
             $this->_error();
             return false;
         }
 
         return true;
     }
+
 }

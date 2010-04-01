@@ -133,22 +133,13 @@ class Zend_Gdata_Gapps extends Zend_Gdata
      * @throws mixed
      */
     public static function throwServiceExceptionIfDetected($e) {
-        // Check to make sure that there actually response!
-        // This can happen if the connection dies before the request
-        // completes. (See ZF-5949)
-        $response = $e->getResponse();
-        if (!$response) {
-          require_once('Zend/Gdata/App/IOException.php');
-          throw new Zend_Gdata_App_IOException('No HTTP response received (possible connection failure)');
-        }
-
         try {
             // Check to see if there is an AppsForYourDomainErrors
             // datastructure in the response. If so, convert it to
             // an exception and throw it.
             require_once 'Zend/Gdata/Gapps/ServiceException.php';
             $error = new Zend_Gdata_Gapps_ServiceException();
-            $error->importFromString($response->getBody());
+            $error->importFromString($e->getResponse()->getBody());
             throw $error;
         } catch (Zend_Gdata_App_Exception $e2) {
             // Unable to convert the response to a ServiceException,
@@ -624,11 +615,9 @@ class Zend_Gdata_Gapps extends Zend_Gdata
             $foundClassName = null;
             foreach ($this->_registeredPackages as $name) {
                  try {
-                     if (!class_exists($name . '_' . $class)) {
-                        require_once 'Zend/Loader.php';
-                        @Zend_Loader::loadClass($name . '_' . $class);
-                     }
-                     $foundClassName = $name . '_' . $class;
+                     require_once 'Zend/Loader.php';
+                     @Zend_Loader::loadClass("${name}_${class}");
+                     $foundClassName = "${name}_${class}";
                      break;
                  } catch (Zend_Exception $e) {
                      // package wasn't here- continue searching

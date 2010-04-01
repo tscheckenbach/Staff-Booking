@@ -1,37 +1,63 @@
 <?php
+ 
+ini_set('include_path', ini_get('include_path').PATH_SEPARATOR.'../library');
+ini_set('include_path', ini_get('include_path').PATH_SEPARATOR.'../application/models');
+ini_set('include_path', ini_get('include_path').PATH_SEPARATOR.'../application/controllers');
+require_once("Zend/Loader.php");
+Zend_Loader::registerAutoload(); 
 
-// Define path to application directory
 defined('APPLICATION_PATH')
-    || define('APPLICATION_PATH', realpath(dirname(__FILE__) . '/../application'));
+    or define('APPLICATION_PATH', '../application');
 
-// Define application environment
-defined('APPLICATION_ENV')
-    || define('APPLICATION_ENV', (getenv('APPLICATION_ENV') ? getenv('APPLICATION_ENV') : 'production'));
+// Activate error-reporting on our development environment, else we are live
+if($_SERVER['HTTP_HOST'] == "supibooking.this.loc")
+{
+	error_reporting(E_ALL);
+	ini_set('display_errors','on');
+	$envConfig = new Zend_Config_Ini(APPLICATION_PATH.'/config.ini','development');
+	define('APPLICATION_ENVIRONMENT', 'development');
+	
+	$db = new Zend_Db_Adapter_Pdo_Mysql(array(
+	    'host'     => $envConfig->database->params->host,
+	    'username' => $envConfig->database->params->username,
+	    'password' => $envConfig->database->params->password,
+	    'dbname'   => $envConfig->database->params->dbname
+	));
 
-// Ensure library/ is on include_path
-set_include_path(implode(PATH_SEPARATOR, array(
-    realpath(APPLICATION_PATH . '/../library'),
-    get_include_path(),
-)));
+        // FirePHP Logger
+        $writer = new Zend_Log_Writer_Firebug();
+        $logger = new Zend_Log($writer);
+        
+        // FirePHP Profiler -> profiling all DB-Querys
+        $profiler = new Zend_Db_Profiler_Firebug('All DB Queries');
+        $profiler->setEnabled(true);
 
-/** Zend_Application */
-require_once 'Zend/Application.php';  
+        // Attach the profiler to the db adapter
+        $db->setProfiler($profiler);
+} else {
+	error_reporting(0);
+	ini_set('display_errors','off');
+	$envConfig = new Zend_Config_Ini(APPLICATION_PATH.'/config.ini','live');
+	define('APPLICATION_ENVIRONMENT', 'live');
+	
+	$db = new Zend_Db_Adapter_Pdo_Mysql(array(
+	    'host'     => $envConfig->database->params->host,
+	    'username' => $envConfig->database->params->username,
+	    'password' => $envConfig->database->params->password,
+	    'dbname'   => $envConfig->database->params->dbname
+	));
+}
 
-// Create application, bootstrap, and run
-$application = new Zend_Application(
-    APPLICATION_ENV, 
-    APPLICATION_PATH . '/configs/application.ini'
-);
-
-
-/** Get DB-Adapter **/
-$bootstrap = $application->getBootstrap();
-$bootstrap->bootstrap('db');
-$db = $bootstrap->getResource('db');
-
+// Activate default Adapter
 Zend_Db_Table::setDefaultAdapter($db);
 Zend_Registry::set('db', $db);
+try
+{
+	require_once(APPLICATION_PATH."/bootstrap.php");
+} catch (Exception $exception)
+{
+	print "Es ist ein Fehler aufgetreten: ".$exception->getMessage()."<br /><pre>".$exception->getTraceAsString()."</pre>";
+	exit(1);
+} 
 
-
-$application->bootstrap()
-            ->run();
+Zend_Controller_Front::getInstance()->dispatch();

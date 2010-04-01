@@ -20,6 +20,11 @@
  */
  
 /**
+ * @see Zend_Loader
+ */
+require_once 'Zend/Loader.php';
+
+/**
  * @see Zend_Http_Client
  */
 require_once 'Zend/Http/Client.php';
@@ -86,10 +91,7 @@ class Zend_Service_Nirvanix
         $options['namespace'] = ucfirst($namespace);
         $options = array_merge($this->_options, $options);
 
-        if (!class_exists($class)) {
-            require_once 'Zend/Loader.php';
-            Zend_Loader::loadClass($class);
-        }
+        Zend_Loader::loadClass($class);
         return new $class($options);
     }
     

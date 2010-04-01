@@ -30,6 +30,11 @@ require_once 'Zend/Server/Interface.php';
 require_once 'Zend/Server/Reflection.php';
 
 /**
+ * Zend_Rest_Server_Exception
+ */
+require_once 'Zend/Rest/Server/Exception.php';
+
+/**
  * Zend_Server_Abstract
  */
 require_once 'Zend/Server/Abstract.php';
@@ -109,8 +114,8 @@ class Zend_Rest_Server implements Zend_Server_Interface
 
     /**
      * Set XML encoding
-     *
-     * @param  string $encoding
+     * 
+     * @param  string $encoding 
      * @return Zend_Rest_Server
      */
     public function setEncoding($encoding)
@@ -121,7 +126,7 @@ class Zend_Rest_Server implements Zend_Server_Interface
 
     /**
      * Get XML encoding
-     *
+     * 
      * @return string
      */
     public function getEncoding()
@@ -209,7 +214,6 @@ class Zend_Rest_Server implements Zend_Server_Interface
 
                     $result = false;
                     if (count($calling_args) < count($func_args)) {
-                        require_once 'Zend/Rest/Server/Exception.php';
                         $result = $this->fault(new Zend_Rest_Server_Exception('Invalid Method Call to ' . $this->_method . '. Requires ' . count($func_args) . ', ' . count($calling_args) . ' given.'), 400);
                     }
 
@@ -476,7 +480,7 @@ class Zend_Rest_Server implements Zend_Server_Interface
             $element->appendChild($dom->createTextNode($exception->getMessage()));
             $xmlResponse->appendChild($element);
             $code = $exception->getCode();
-        } elseif (($exception !== null) || 'rest' == $function) {
+        } elseif (!is_null($exception) || 'rest' == $function) {
             $xmlResponse->appendChild($dom->createElement('message', 'An unknown error occured. Please try again.'));
         } else {
             $xmlResponse->appendChild($dom->createElement('message', 'Call to ' . $method . ' failed.'));
@@ -486,7 +490,8 @@ class Zend_Rest_Server implements Zend_Server_Interface
         $xmlMethod->appendChild($dom->createElement('status', 'failed'));
 
         // Headers to send
-        if ($code === null || (404 != $code)) {
+        if (is_null($code) || (404 != $code))
+        {
             $this->_headers[] = 'HTTP/1.0 400 Bad Request';
         } else {
             $this->_headers[] = 'HTTP/1.0 404 File Not Found';
@@ -521,7 +526,6 @@ class Zend_Rest_Server implements Zend_Server_Interface
             if (is_callable($func) && !in_array($func, self::$magicMethods)) {
                 $this->_functions[$func] = $this->_reflection->reflectFunction($func);
             } else {
-                require_once 'Zend/Rest/Server/Exception.php';
                 throw new Zend_Rest_Server_Exception("Invalid Method Added to Service.");
             }
         }
@@ -559,9 +563,9 @@ class Zend_Rest_Server implements Zend_Server_Interface
 
     /**
      * Call a static class method and return the result
-     *
-     * @param  string $class
-     * @param  array $args
+     * 
+     * @param  string $class 
+     * @param  array $args 
      * @return mixed
      */
     protected function _callStaticMethod($class, array $args)
@@ -576,7 +580,7 @@ class Zend_Rest_Server implements Zend_Server_Interface
 
     /**
      * Call an instance method of an object
-     *
+     * 
      * @param  string $class
      * @param  array $args
      * @return mixed
@@ -592,7 +596,6 @@ class Zend_Rest_Server implements Zend_Server_Interface
             }
         } catch (Exception $e) {
             echo $e->getMessage();
-            require_once 'Zend/Rest/Server/Exception.php';
             throw new Zend_Rest_Server_Exception('Error instantiating class ' . $class . ' to invoke method ' . $this->_functions[$this->_method]->getName(), 500);
         }
 

@@ -16,7 +16,7 @@
  * @package    Zend_Config
  * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Config.php 14415 2009-03-21 21:56:00Z rob $
+ * @version    $Id: Config.php 12204 2008-10-30 20:42:37Z dasprid $
  */
 
 
@@ -56,13 +56,6 @@ class Zend_Config implements Countable, Iterator
      */
     protected $_data;
 
-    /**
-     * Used when unsetting values during iteration to ensure we do not skip
-     * the next element
-     *
-     * @var boolean
-     */
-    protected $_skipNextIteration;
 
     /**
      * Contains which config file sections were loaded. This is null
@@ -230,7 +223,6 @@ class Zend_Config implements Countable, Iterator
         if ($this->_allowModifications) {
             unset($this->_data[$name]);
             $this->_count = count($this->_data);
-            $this->_skipNextIteration = true;
         } else {
             /** @see Zend_Config_Exception */
             require_once 'Zend/Config/Exception.php';
@@ -256,7 +248,6 @@ class Zend_Config implements Countable, Iterator
      */
     public function current()
     {
-        $this->_skipNextIteration = false;
         return current($this->_data);
     }
 
@@ -276,10 +267,6 @@ class Zend_Config implements Countable, Iterator
      */
     public function next()
     {
-        if ($this->_skipNextIteration) {
-            $this->_skipNextIteration = false;
-            return;
-        }
         next($this->_data);
         $this->_index++;
     }
@@ -290,7 +277,6 @@ class Zend_Config implements Countable, Iterator
      */
     public function rewind()
     {
-        $this->_skipNextIteration = false;
         reset($this->_data);
         $this->_index = 0;
     }
@@ -312,9 +298,6 @@ class Zend_Config implements Countable, Iterator
      */
     public function getSectionName()
     {
-        if(is_array($this->_loadedSection) && count($this->_loadedSection) == 1) {
-            $this->_loadedSection = $this->_loadedSection[0];
-        }
         return $this->_loadedSection;
     }
 
@@ -367,11 +350,6 @@ class Zend_Config implements Countable, Iterator
     public function setReadOnly()
     {
         $this->_allowModifications = false;
-        foreach ($this->_data as $key => $value) {
-            if ($value instanceof Zend_Config) {
-                $value->setReadOnly();
-            }
-        }
     }
     
     /**

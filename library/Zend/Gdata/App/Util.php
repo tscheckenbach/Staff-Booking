@@ -80,7 +80,7 @@ class Zend_Gdata_App_Util
             throw new Zend_Gdata_App_Exception("Empty namespace collection encountered.");
         }
 
-        if ($maximumKey === null) {
+        if (is_null($maximumKey)) {
             // If the key is null, then we return the maximum available
             $keys = array_keys($collection);
             sort($keys);

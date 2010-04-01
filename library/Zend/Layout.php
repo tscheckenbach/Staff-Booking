@@ -16,7 +16,7 @@
  * @package    Zend_Layout
  * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Layout.php 15577 2009-05-14 12:43:34Z matthew $
+ * @version    $Id: Layout.php 13017 2008-12-04 15:29:24Z doctorrock83 $
  */
 
 /**
@@ -264,10 +264,8 @@ class Zend_Layout
         require_once 'Zend/Controller/Front.php';
         $front = Zend_Controller_Front::getInstance();
         if (!$front->hasPlugin($pluginClass)) {
-            if (!class_exists($pluginClass)) {
-                require_once 'Zend/Loader.php';
-                Zend_Loader::loadClass($pluginClass);
-            }
+            require_once 'Zend/Loader.php';
+            Zend_Loader::loadClass($pluginClass);
             $front->registerPlugin(
                 // register to run last | BUT before the ErrorHandler (if its available)
                 new $pluginClass($this), 
@@ -286,10 +284,8 @@ class Zend_Layout
         $helperClass = $this->getHelperClass();
         require_once 'Zend/Controller/Action/HelperBroker.php';
         if (!Zend_Controller_Action_HelperBroker::hasHelper('layout')) {
-            if (!class_exists($helperClass)) {
-                require_once 'Zend/Loader.php';
-                Zend_Loader::loadClass($helperClass);
-            }
+            require_once 'Zend/Loader.php';
+            Zend_Loader::loadClass($helperClass);
             Zend_Controller_Action_HelperBroker::getStack()->offsetSet(-90, new $helperClass($this));
         }
     }

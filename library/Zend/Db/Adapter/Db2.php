@@ -30,6 +30,11 @@ require_once 'Zend/Db.php';
 require_once 'Zend/Db/Adapter/Abstract.php';
 
 /**
+ * @see Zend_Loader
+ */
+require_once 'Zend/Loader.php';
+
+/**
  * @see Zend_Db_Statement_Db2
  */
 require_once 'Zend/Db/Statement/Db2.php';
@@ -221,10 +226,7 @@ class Zend_Db_Adapter_Db2 extends Zend_Db_Adapter_Abstract
     {
         $this->_connect();
         $stmtClass = $this->_defaultStmtClass;
-        if (!class_exists($stmtClass)) {
-            require_once 'Zend/Loader.php';
-            Zend_Loader::loadClass($stmtClass);
-        }
+        Zend_Loader::loadClass($stmtClass);
         $stmt = new $stmtClass($this, $sql);
         $stmt->setFetchMode($this->_fetchMode);
         return $stmt;
@@ -400,7 +402,7 @@ class Zend_Db_Adapter_Db2 extends Zend_Db_Adapter_Abstract
             $sql = "SELECT DISTINCT C.TABLE_SCHEMA, C.TABLE_NAME, C.COLUMN_NAME, C.ORDINAL_POSITION,
                 C.DATA_TYPE, C.COLUMN_DEFAULT, C.NULLS ,C.LENGTH, C.SCALE, LEFT(C.IDENTITY,1),
                 LEFT(tc.TYPE, 1) AS tabconsttype, k.COLSEQ
-                FROM QSYS2.SYSCOLUMNS C     
+                FROM QSYS2.SYSCOLUMNS C
                 LEFT JOIN (QSYS2.syskeycst k JOIN QSYS2.SYSCST tc
                     ON (k.TABLE_SCHEMA = tc.TABLE_SCHEMA
                       AND k.TABLE_NAME = tc.TABLE_NAME

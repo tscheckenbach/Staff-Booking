@@ -14,15 +14,15 @@
  *
  * @category   Zend
  * @package    Zend_Soap
- * @subpackage AutoDiscover
  * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: AutoDiscover.php 14918 2009-04-15 16:07:53Z beberlei $
+ * @version    $Id: AutoDiscover.php 13636 2009-01-14 21:19:24Z beberlei $
  */
 
 require_once 'Zend/Server/Interface.php';
 require_once 'Zend/Soap/Wsdl.php';
 require_once 'Zend/Server/Reflection.php';
+require_once 'Zend/Server/Exception.php';
 require_once 'Zend/Server/Abstract.php';
 require_once 'Zend/Uri.php';
 
@@ -31,7 +31,6 @@ require_once 'Zend/Uri.php';
  *
  * @category   Zend
  * @package    Zend_Soap
- * @subpackage AutoDiscover
  */
 class Zend_Soap_AutoDiscover implements Zend_Server_Interface {
     /**
@@ -62,20 +61,6 @@ class Zend_Soap_AutoDiscover implements Zend_Server_Interface {
     protected $_uri;
 
     /**
-     * soap:body operation style options
-     *
-     * @var array
-     */
-    protected $_operationBodyStyle = array('use' => 'encoded', 'encodingStyle' => "http://schemas.xmlsoap.org/soap/encoding/");
-
-    /**
-     * soap:operation style
-     *
-     * @var array
-     */
-    protected $_bindingStyle = array('style' => 'rpc', 'transport' => 'http://schemas.xmlsoap.org/soap/http');
-
-    /**
      * Constructor
      *
      * @param boolean|string|Zend_Soap_Wsdl_Strategy_Interface $strategy
@@ -101,7 +86,9 @@ class Zend_Soap_AutoDiscover implements Zend_Server_Interface {
      */
     public function setUri($uri)
     {
-        if(!is_string($uri) && !($uri instanceof Zend_Uri)) {
+        if(is_string($uri)) {
+            $uri = Zend_Uri::factory($uri);
+        } else if(!($uri instanceof Zend_Uri)) {
             require_once "Zend/Soap/AutoDiscover/Exception.php";
             throw new Zend_Soap_AutoDiscover_Exception("No uri given to Zend_Soap_AutoDiscover::setUri as string or Zend_Uri instance.");
         }
@@ -122,7 +109,7 @@ class Zend_Soap_AutoDiscover implements Zend_Server_Interface {
      */
     public function getUri()
     {
-        if($this->_uri !== null) {
+        if($this->_uri instanceof Zend_Uri) {
             $uri = $this->_uri;
         } else {
             $schema     = $this->getSchema();
@@ -132,45 +119,6 @@ class Zend_Soap_AutoDiscover implements Zend_Server_Interface {
             $this->setUri($uri);
         }
         return $uri;
-    }
-
-    /**
-     * Set options for all the binding operations soap:body elements.
-     *
-     * By default the options are set to 'use' => 'encoded' and
-     * 'encodingStyle' => "http://schemas.xmlsoap.org/soap/encoding/".
-     *
-     * @see    Zend_Soap_AutoDiscover_Exception
-     * @param  array $operationStyle
-     * @return Zend_Soap_AutoDiscover
-     */
-    public function setOperationBodyStyle(array $operationStyle=array())
-    {
-        if(!isset($operationStyle['use'])) {
-            require_once "Zend/Soap/AutoDiscover/Exception.php";
-            throw new Zend_Soap_AutoDiscover_Exception("Key 'use' is required in Operation soap:body style.");
-        }
-        $this->_operationBodyStyle = $operationStyle;
-        return $this;
-    }
-
-    /**
-     * Set Binding soap:binding style.
-     *
-     * By default 'style' is 'rpc' and 'transport' is 'http://schemas.xmlsoap.org/soap/http'.
-     *
-     * @param  array $bindingStyle
-     * @return Zend_Soap_AutoDiscover
-     */
-    public function setBindingStyle(array $bindingStyle=array())
-    {
-        if(isset($bindingStyle['style'])) {
-            $this->_bindingStyle['style'] = $bindingStyle['style'];
-        }
-        if(isset($bindingStyle['transport'])) {
-            $this->_bindingStyle['transport'] = $bindingStyle['transport'];
-        }
-        return $this;
     }
 
     /**
@@ -257,7 +205,7 @@ class Zend_Soap_AutoDiscover implements Zend_Server_Interface {
         $port = $wsdl->addPortType($class . 'Port');
         $binding = $wsdl->addBinding($class . 'Binding', 'tns:' .$class. 'Port');
 
-        $wsdl->addSoapBinding($binding, $this->_bindingStyle['style'], $this->_bindingStyle['transport']);
+        $wsdl->addSoapBinding($binding, 'rpc');
         $wsdl->addService($class . 'Service', $class . 'Port', 'tns:' . $class . 'Binding', $uri);
         foreach ($this->_reflection->reflectClass($class)->getMethods() as $method) {
             /* <wsdl:portType>'s */
@@ -292,13 +240,12 @@ class Zend_Soap_AutoDiscover implements Zend_Server_Interface {
                     //$wsdl->addDocumentation($message, $desc);
                 }
                 if ($prototype->getReturnType() != "void") {
-                    $returnName = 'return';
-                    $message = $wsdl->addMessage($method->getName() . 'Response', array($returnName => $wsdl->getType($prototype->getReturnType())));
+                    $message = $wsdl->addMessage($method->getName() . 'Response', array($method->getName() . 'Return' => $wsdl->getType($prototype->getReturnType())));
                 }
 
                 /* <wsdl:binding>'s */
-                $operation = $wsdl->addBindingOperation($binding, $method->getName(),  $this->_operationBodyStyle, $this->_operationBodyStyle);
-                $wsdl->addSoapOperation($operation, $uri . '#' .$method->getName());
+                $operation = $wsdl->addBindingOperation($binding, $method->getName(),  array('use' => 'encoded', 'encodingStyle' => "http://schemas.xmlsoap.org/soap/encoding/"), array('use' => 'encoded', 'encodingStyle' => "http://schemas.xmlsoap.org/soap/encoding/"));
+                $wsdl->addSoapOperation($operation, $uri->getUri() . '#' .$method->getName());
                 /* </wsdl:binding>'s */
             }
         }
@@ -331,7 +278,7 @@ class Zend_Soap_AutoDiscover implements Zend_Server_Interface {
             $port = $wsdl->addPortType($name . 'Port');
             $binding = $wsdl->addBinding($name . 'Binding', 'tns:' .$name. 'Port');
 
-            $wsdl->addSoapBinding($binding, $this->_bindingStyle['style'], $this->_bindingStyle['transport']);
+            $wsdl->addSoapBinding($binding, 'rpc');
             $wsdl->addService($name . 'Service', $name . 'Port', 'tns:' . $name . 'Binding', $uri);
         } else {
             $wsdl = $this->_wsdl;
@@ -349,9 +296,8 @@ class Zend_Soap_AutoDiscover implements Zend_Server_Interface {
                 if (strlen($desc) > 0) {
                     //$wsdl->addDocumentation($message, $desc);
                 }
-                if($prototype->getReturnType() != "void") {
-                    $returnName = "return";
-                    $message = $wsdl->addMessage($method->getName() . 'Response', array($returnName => $wsdl->getType($prototype->getReturnType())));
+                if ($prototype->getReturnType() != "void") {
+                    $message = $wsdl->addMessage($method->getName() . 'Response', array($method->getName() . 'Return' => $wsdl->getType($prototype->getReturnType())));
                 }
                  /* <wsdl:portType>'s */
                    $portOperation = $wsdl->addPortOperation($port, $method->getName(), 'tns:' .$method->getName(). 'Request', 'tns:' .$method->getName(). 'Response');
@@ -361,8 +307,8 @@ class Zend_Soap_AutoDiscover implements Zend_Server_Interface {
                    /* </wsdl:portType>'s */
 
                 /* <wsdl:binding>'s */
-                $operation = $wsdl->addBindingOperation($binding, $method->getName(), $this->_operationBodyStyle, $this->_operationBodyStyle);
-                $wsdl->addSoapOperation($operation, $uri . '#' .$method->getName());
+                $operation = $wsdl->addBindingOperation($binding, $method->getName(),  array('use' => 'encoded', 'encodingStyle' => "http://schemas.xmlsoap.org/soap/encoding/"), array('use' => 'encoded', 'encodingStyle' => "http://schemas.xmlsoap.org/soap/encoding/"));
+                $wsdl->addSoapOperation($operation, $uri->getUri() . '#' .$method->getName());
                 /* </wsdl:binding>'s */
 
                 $this->_functions[] = $method->getName();
@@ -397,40 +343,6 @@ class Zend_Soap_AutoDiscover implements Zend_Server_Interface {
             header('Content-Type: text/xml');
         }
         $this->_wsdl->dump();
-    }
-
-    /**
-     * Proxy to WSDL dump function
-     *
-     * @param string $filename
-     */
-    public function dump($filename)
-    {
-        if($this->_wsdl !== null) {
-            return $this->_wsdl->dump($filename);
-        } else {
-            /**
-             * @see Zend_Soap_AutoDiscover_Exception
-             */
-            require_once "Zend/Soap/AutoDiscover/Exception.php";
-            throw new Zend_Soap_AutoDiscover_Exception("Cannot dump autodiscovered contents, WSDL file has not been generated yet.");
-        }
-    }
-
-    /**
-     * Proxy to WSDL toXml() function
-     */
-    public function toXml()
-    {
-        if($this->_wsdl !== null) {
-            return $this->_wsdl->toXml();
-        } else {
-            /**
-             * @see Zend_Soap_AutoDiscover_Exception
-             */
-            require_once "Zend/Soap/AutoDiscover/Exception.php";
-            throw new Zend_Soap_AutoDiscover_Exception("Cannot return autodiscovered contents, WSDL file has not been generated yet.");
-        }
     }
 
     /**
@@ -483,3 +395,4 @@ class Zend_Soap_AutoDiscover implements Zend_Server_Interface {
         }
     }
 }
+

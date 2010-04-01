@@ -45,11 +45,7 @@ class Zend_File_Transfer
                 break;
         }
         
-        if (!class_exists($adapter)) {
-            require_once 'Zend/Loader.php';
-            Zend_Loader::loadClass($adapter);
-        }
-
+        Zend_Loader::loadClass($adapter);
         $this->_adapter = new $adapter();
         if (!$this->_adapter instanceof Zend_File_Transfer_Adapter) {
             require_once 'Zend/File/Transfer/Exception.php';

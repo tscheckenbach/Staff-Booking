@@ -6,9 +6,9 @@
 */
 
 body{
-	font-family: Helvetica, Arial;
-	font-size: 14px;
-	color: black;
+    font-family: Helvetica, Arial;
+    font-size: 14px;
+    color: black;
 }
 
 #jsInfo {
@@ -26,7 +26,7 @@ body{
     font-size: 18px;
 }
 
-div#wrapper {
+#wrapper {
     width: 960px;
     margin: 30px auto;
     padding: 20px;
@@ -35,7 +35,7 @@ div#wrapper {
     -khtml-border-radius: 15px;
 }
 
-div#loginwrapper {
+#loginwrapper {
     width: 400px;
     margin: 30px auto;
     background-image: url("/files/images/logo.png");
@@ -47,7 +47,7 @@ div#loginwrapper {
 
 }
 
-div#logincontent {
+#logincontent {
     margin: 20px;
 }
 
@@ -60,40 +60,45 @@ dt {
     margin-top: 5px;
 }
 
-table#calTable {
-	width: 960px;
-	clear: both;
+#calTable {
+    width: 960px;
+    clear: both;
 }
 
-div#calNavigationContainer{
+#calNavigationContainer{
     height: 80px;
 }
 
-div#headerContainer {
-	width: 900px;
+#headerContainer {
+    width: 900px;
     height: 80px;
-	margin-bottom: 20px;
+    margin-bottom: 20px;
 }
 
-table#calTable th {
-	padding: 5px;
-	text-align: center;
-	border: 1px solid black;
+#calTable th {
+    padding: 5px;
+    text-align: center;
+    border: 1px solid black;
 }
 
-ul#calNavigation li{
-	float: left;
+#kw-form{
+    float: left;
+    margin: 34px 0 0 20px;
+}
+
+#calNavigation li{
+    float: left;
     margin-left: 20px;
     margin-top: 34px;
 }
 
 .time {
-	padding: 5px;
-	border: 1px solid black;
+    padding: 5px;
+    border: 1px solid black;
 }
 
 .calentry {
-	padding: 3px;
-	text-align: center;
-	border: 1px solid black;
+    padding: 3px;
+    text-align: center;
+    border: 1px solid black;
 }

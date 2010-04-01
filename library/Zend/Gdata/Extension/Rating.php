@@ -120,7 +120,7 @@ class Zend_Gdata_Extension_Rating extends Zend_Gdata_Extension
                 $this->_average = $attribute->nodeValue;
                 break;
             case 'value':
-                $this->_value = $attribute->nodeValue;
+                $this->_value = $atttribute->nodeValue;
             default:
                 parent::takeAttributeFromDOM($attribute);
         }

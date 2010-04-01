@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework
  *
@@ -16,13 +17,15 @@
  * @package    Zend_Filter
  * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Filter.php 15577 2009-05-14 12:43:34Z matthew $
+ * @version    $Id: Filter.php 8434 2008-02-27 19:15:13Z darby $
  */
+
 
 /**
  * @see Zend_Filter_Interface
  */
 require_once 'Zend/Filter/Interface.php';
+
 
 /**
  * @category   Zend
@@ -88,16 +91,13 @@ class Zend_Filter implements Zend_Filter_Interface
     public static function get($value, $classBaseName, array $args = array(), $namespaces = array())
     {
         require_once 'Zend/Loader.php';
-        $namespaces = array_merge((array) $namespaces, array('Zend_Filter'));
+        $namespaces = array_merge(array('Zend_Filter'), (array) $namespaces);
         foreach ($namespaces as $namespace) {
             $className = $namespace . '_' . ucfirst($classBaseName);
-            if (!class_exists($className)) {
-                try {
-                    require_once 'Zend/Loader.php';
-                    Zend_Loader::loadClass($className);
-                } catch (Zend_Exception $ze) {
-                    continue;
-                }
+            try {
+                @Zend_Loader::loadClass($className);
+            } catch (Zend_Exception $ze) {
+                continue;
             }
             $class = new ReflectionClass($className);
             if ($class->implementsInterface('Zend_Filter_Interface')) {

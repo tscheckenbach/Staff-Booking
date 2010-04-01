@@ -25,6 +25,9 @@ require_once 'Zend/Loader.php';
 /** Zend_Controller_Action_HelperBroker */
 require_once 'Zend/Controller/Action/HelperBroker.php';
 
+/** Zend_Controller_Exception */
+require_once 'Zend/Controller/Exception.php';
+
 /** Zend_Controller_Plugin_Broker */
 require_once 'Zend/Controller/Plugin/Broker.php';
 
@@ -132,8 +135,8 @@ class Zend_Controller_Front
     }
 
     /**
-     * Enforce singleton; disallow cloning
-     *
+     * Enforce singleton; disallow cloning 
+     * 
      * @return void
      */
     private function __clone()
@@ -262,9 +265,9 @@ class Zend_Controller_Front
     }
 
     /**
-     * Remove a controller directory by module name
-     *
-     * @param  string $module
+     * Remove a controller directory by module name 
+     * 
+     * @param  string $module 
      * @return bool
      */
     public function removeControllerDirectory($module)
@@ -287,7 +290,6 @@ class Zend_Controller_Front
         try{
             $dir = new DirectoryIterator($path);
         }catch(Exception $e){
-            require_once 'Zend/Controller/Exception.php';
             throw new Zend_Controller_Exception("Directory $path not readable");
         }
         foreach ($dir as $file) {
@@ -311,8 +313,8 @@ class Zend_Controller_Front
 
     /**
      * Return the path to a module directory (but not the controllers directory within)
-     *
-     * @param  string $module
+     * 
+     * @param  string $module 
      * @return string|null
      */
     public function getModuleDirectory($module = null)
@@ -442,14 +444,10 @@ class Zend_Controller_Front
     public function setRequest($request)
     {
         if (is_string($request)) {
-            if (!class_exists($request)) {
-                require_once 'Zend/Loader.php';
-                Zend_Loader::loadClass($request);
-            }
+            Zend_Loader::loadClass($request);
             $request = new $request();
         }
         if (!$request instanceof Zend_Controller_Request_Abstract) {
-            require_once 'Zend/Controller/Exception.php';
             throw new Zend_Controller_Exception('Invalid request class');
         }
 
@@ -484,15 +482,11 @@ class Zend_Controller_Front
     public function setRouter($router)
     {
         if (is_string($router)) {
-            if (!class_exists($router)) {
-                require_once 'Zend/Loader.php';
-                Zend_Loader::loadClass($router);
-            }
+            Zend_Loader::loadClass($router);
             $router = new $router();
         }
 
         if (!$router instanceof Zend_Controller_Router_Interface) {
-            require_once 'Zend/Controller/Exception.php';
             throw new Zend_Controller_Exception('Invalid router class');
         }
 
@@ -542,7 +536,6 @@ class Zend_Controller_Front
     public function setBaseUrl($base = null)
     {
         if (!is_string($base) && (null !== $base)) {
-            require_once 'Zend/Controller/Exception.php';
             throw new Zend_Controller_Exception('Rewrite base must be a string');
         }
 
@@ -616,14 +609,10 @@ class Zend_Controller_Front
     public function setResponse($response)
     {
         if (is_string($response)) {
-            if (!class_exists($response)) {
-                require_once 'Zend/Loader.php';
-                Zend_Loader::loadClass($response);
-            }
+            Zend_Loader::loadClass($response);
             $response = new $response();
         }
         if (!$response instanceof Zend_Controller_Response_Abstract) {
-            require_once 'Zend/Controller/Exception.php';
             throw new Zend_Controller_Exception('Invalid response class');
         }
 
@@ -786,8 +775,8 @@ class Zend_Controller_Front
      * Default behaviour is to trap them in the response object; call this
      * method to have them thrown.
      *
-     * Passing no value will return the current value of the flag; passing a
-     * boolean true or false value will set the flag and return the current
+     * Passing no value will return the current value of the flag; passing a 
+     * boolean true or false value will set the flag and return the current 
      * object instance.
      *
      * @param boolean $flag Defaults to null (return flag state)

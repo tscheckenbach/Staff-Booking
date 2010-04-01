@@ -326,37 +326,6 @@ abstract class Zend_Db_Table_Abstract
     }
 
     /**
-     * Add a reference to the reference map
-     *
-     * @param string $ruleKey
-     * @param string|array $columns
-     * @param string $refTableClass
-     * @param string|array $refColumns
-     * @param string $onDelete
-     * @param string $onUpdate
-     * @return Zend_Db_Table_Abstract
-     */
-    public function addReference($ruleKey, $columns, $refTableClass, $refColumns,
-                                 $onDelete = null, $onUpdate = null)
-    {
-        $reference = array(self::COLUMNS         => (array) $columns,
-                           self::REF_TABLE_CLASS => $refTableClass,
-                           self::REF_COLUMNS     => (array) $refColumns);
-
-        if (!empty($onDelete)) {
-            $reference[self::ON_DELETE] = $onDelete;
-        }
-
-        if (!empty($onUpdate)) {
-            $reference[self::ON_UPDATE] = $onUpdate;
-        }
-
-        $this->_referenceMap[$ruleKey] = $reference;
-
-        return $this;
-    }
-
-    /**
      * @param array $referenceMap
      * @return Zend_Db_Table_Abstract Provides a fluent interface
      */
@@ -577,10 +546,10 @@ abstract class Zend_Db_Table_Abstract
     }
 
     /**
-     * Indicate whether metadata should be cached in the class for the duration
+     * Indicate whether metadata should be cached in the class for the duration 
      * of the instance
-     *
-     * @param  bool $flag
+     * 
+     * @param  bool $flag 
      * @return Zend_Db_Table_Abstract
      */
     public function setMetadataCacheInClass($flag)
@@ -590,9 +559,9 @@ abstract class Zend_Db_Table_Abstract
     }
 
     /**
-     * Retrieve flag indicating if metadata should be cached for duration of
+     * Retrieve flag indicating if metadata should be cached for duration of 
      * instance
-     *
+     * 
      * @return bool
      */
     public function metadataCacheInClass()
@@ -744,7 +713,7 @@ abstract class Zend_Db_Table_Abstract
 
     /**
      * Retrieve table columns
-     *
+     * 
      * @return array
      */
     protected function _getCols()
@@ -977,29 +946,6 @@ abstract class Zend_Db_Table_Abstract
     }
 
     /**
-     * Check if the provided column is an identity of the table
-     *
-     * @param  string $column
-     * @throws Zend_Db_Table_Exception
-     * @return boolean
-     */
-    public function isIdentity($column)
-    {
-        $this->_setupPrimaryKey();
-
-        if (!isset($this->_metadata[$column])) {
-            /**
-             * @see Zend_Db_Table_Exception
-             */
-            require_once 'Zend/Db/Table/Exception.php';
-
-            throw new Zend_Db_Table_Exception('Column "' . $column . '" not found in table.');
-        }
-
-        return (bool) $this->_metadata[$column]['IDENTITY'];
-    }
-
-    /**
      * Updates existing rows.
      *
      * @param  array        $data  Column-value pairs.
@@ -1159,11 +1105,11 @@ abstract class Zend_Db_Table_Abstract
         $whereClause = null;
         if (count($whereList)) {
             $whereOrTerms = array();
-            $tableName = $this->_db->quoteTableAs($this->_name, null, true);
             foreach ($whereList as $keyValueSets) {
                 $whereAndTerms = array();
                 foreach ($keyValueSets as $keyPosition => $keyValue) {
                     $type = $this->_metadata[$keyNames[$keyPosition]]['DATA_TYPE'];
+                    $tableName = $this->_db->quoteTableAs($this->_name, null, true);
                     $columnName = $this->_db->quoteIdentifier($keyNames[$keyPosition], true);
                     $whereAndTerms[] = $this->_db->quoteInto(
                         $tableName . '.' . $columnName . ' = ?',
@@ -1219,20 +1165,17 @@ abstract class Zend_Db_Table_Abstract
             'stored'   => true
         );
 
-        if (!class_exists($this->_rowsetClass)) {
-            require_once 'Zend/Loader.php';
-            Zend_Loader::loadClass($this->_rowsetClass);
-        }
+        @Zend_Loader::loadClass($this->_rowsetClass);
         return new $this->_rowsetClass($data);
     }
 
     /**
      * Fetches one row in an object of type Zend_Db_Table_Row_Abstract,
-     * or returns null if no row matches the specified criteria.
+     * or returns Boolean false if no row matches the specified criteria.
      *
      * @param string|array|Zend_Db_Table_Select $where  OPTIONAL An SQL WHERE clause or Zend_Db_Table_Select object.
      * @param string|array                      $order  OPTIONAL An SQL ORDER clause.
-     * @return Zend_Db_Table_Row_Abstract|null The row results per the
+     * @return Zend_Db_Table_Row_Abstract The row results per the
      *     Zend_Db_Adapter fetch mode, or null if no row found.
      */
     public function fetchRow($where = null, $order = null)
@@ -1267,10 +1210,7 @@ abstract class Zend_Db_Table_Abstract
             'stored'  => true
         );
 
-        if (!class_exists($this->_rowClass)) {
-            require_once 'Zend/Loader.php';
-            Zend_Loader::loadClass($this->_rowClass);
-        }
+        @Zend_Loader::loadClass($this->_rowClass);
         return new $this->_rowClass($data);
     }
 
@@ -1329,10 +1269,7 @@ abstract class Zend_Db_Table_Abstract
             'stored'   => false
         );
 
-        if (!class_exists($this->_rowClass)) {
-            require_once 'Zend/Loader.php';
-            Zend_Loader::loadClass($this->_rowClass);
-        }
+        @Zend_Loader::loadClass($this->_rowClass);
         $row = new $this->_rowClass($config);
         $row->setFromArray($data);
         return $row;
